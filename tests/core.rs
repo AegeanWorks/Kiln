@@ -2,9 +2,10 @@
 
 use kiln_core::cli::{self, Command};
 use kiln_core::compare::compare_fixture;
-use kiln_core::generate::generate;
+use kiln_core::drift::drift_report;
+use kiln_core::generate::{generate, generate_edges};
 use kiln_core::machine::{self, Action, Event, Phase, RunState};
-use kiln_core::model::{Format, Verdict};
+use kiln_core::model::{Format, GenerationMode, Verdict};
 use kiln_core::render::{render, render_csv, render_json};
 use kiln_core::rng::Rng;
 use kiln_core::{schema, schema::validate};
@@ -88,6 +89,7 @@ fn machine_applies_count_and_format_overrides() {
         out: None,
         fixture_text: String::new(),
         check: false,
+        mode: GenerationMode::Seeded,
     });
     assert_eq!(state.phase, Phase::Loading);
     assert!(matches!(actions[0], Action::Read { .. }));
@@ -98,7 +100,8 @@ fn machine_applies_count_and_format_overrides() {
     assert!(matches!(actions[0], Action::Validate { .. }));
     actions = machine::transition(&mut state, Event::Validated { schema: example_schema() });
     match &actions[0] {
-        Action::Generate { schema } => {
+        Action::Generate { schema, mode } => {
+            assert_eq!(*mode, GenerationMode::Seeded);
             assert_eq!(schema.count, 1);
             assert_eq!(schema.format, Format::Csv);
         }
@@ -134,6 +137,7 @@ fn machine_check_mode_returns_a_nonzero_code_on_mismatch() {
         out: None,
         fixture_text: "stale bytes".to_string(),
         check: true,
+        mode: GenerationMode::Seeded,
     });
     machine::transition(&mut state, Event::Loaded { text: EXAMPLE_SCHEMA.to_string() });
     machine::transition(&mut state, Event::Parsed { schema: example_schema() });
@@ -167,6 +171,7 @@ fn cli_parses_every_command() {
             format: Some(Format::Csv),
             count: Some(3),
             out: None,
+            edges: false,
         }
     );
     let check = vec!["check".to_string(), "s.kiln".to_string(), "--fixture".to_string(), "f.json".to_string()];
@@ -174,6 +179,56 @@ fn cli_parses_every_command() {
     let demo = vec!["demo".to_string(), "--scripted".to_string(), "--seed".to_string(), "7".to_string()];
     assert_eq!(cli::parse(&demo).unwrap(), Command::Demo { seed: 7 });
     assert_eq!(cli::parse(&[]).unwrap(), Command::Help);
+}
+
+#[test]
+fn edges_mode_is_deterministic_and_ignores_the_seed() {
+    let schema = example_schema();
+    let mut other = schema.clone();
+    other.seed += 1;
+    let first = generate_edges(&schema);
+    let second = generate_edges(&other);
+    assert_eq!(first, second);
+    assert_eq!(first.records.len(), 2 + schema.fields.len());
+    // The first two records are all-low and all-high.
+    assert!(format!("{:?}", first.records[0]).contains("Int(1)"));
+    assert!(format!("{:?}", first.records[1]).contains("Int(9999)"));
+}
+
+#[test]
+fn json_reader_preserves_key_order() {
+    let parsed = kiln_core::json::parse("{\"b\": 1, \"a\": [true, \"x\"]}").unwrap();
+    match parsed {
+        kiln_core::json::Json::Object(entries) => {
+            assert_eq!(entries[0].0, "b");
+            assert_eq!(entries[1].0, "a");
+        }
+        other => panic!("expected object, got {:?}", other),
+    }
+}
+
+#[test]
+fn drift_report_names_changed_paths() {
+    let expected = "{\"rows\":[{\"id\":1,\"name\":\"Bob\"}]}";
+    let actual = "{\"rows\":[{\"id\":2,\"name\":\"Bob\",\"extra\":true}]}";
+    let report = drift_report(expected, actual, Format::Json);
+    assert!(report.contains("$.rows[0].id"), "{}", report);
+    assert!(report.contains("$.rows[0].extra"), "{}", report);
+    assert!(report.contains("expected 1, actual 2"), "{}", report);
+}
+
+#[test]
+fn drift_report_handles_csv_columns() {
+    let expected = "id,name\n1,Bob\n";
+    let actual = "id,name\n2,Bob\n";
+    let report = drift_report(expected, actual, Format::Csv);
+    assert!(report.contains("rows[0].id"), "{}", report);
+}
+
+#[test]
+fn cli_parses_edges_flag() {
+    let args = vec!["generate".to_string(), "s.kiln".to_string(), "--edges".to_string()];
+    assert!(matches!(cli::parse(&args).unwrap(), Command::Generate { edges: true, .. }));
 }
 
 #[test]

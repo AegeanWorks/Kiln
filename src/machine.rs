@@ -3,7 +3,7 @@
 //! Every phase transition is enumerated. The machine never performs I/O: it
 //! returns `Action` commands that the shell interprets at the edge.
 
-use crate::model::{Dataset, Format, Rendered, Schema, Verdict};
+use crate::model::{Dataset, Format, GenerationMode, Rendered, Schema, Verdict};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Phase {
@@ -26,6 +26,7 @@ pub struct RunState {
     pub schema: Option<Schema>,
     pub dataset: Option<Dataset>,
     pub format: Option<Format>,
+    pub mode: Option<GenerationMode>,
     pub format_override: Option<Format>,
     pub count_override: Option<usize>,
     pub out_path: Option<String>,
@@ -41,6 +42,7 @@ impl RunState {
             schema: None,
             dataset: None,
             format: None,
+            mode: None,
             format_override: None,
             count_override: None,
             out_path: None,
@@ -60,6 +62,7 @@ pub enum Event {
         out: Option<String>,
         fixture_text: String,
         check: bool,
+        mode: GenerationMode,
     },
     Loaded { text: String },
     Parsed { schema: Schema },
@@ -77,7 +80,7 @@ pub enum Action {
     Read { path: String },
     Parse { text: String },
     Validate { schema: Schema },
-    Generate { schema: Schema },
+    Generate { schema: Schema, mode: GenerationMode },
     Render { dataset: Dataset, format: Format },
     Compare { expected: String, actual: String },
     Write { path: String, text: String },
@@ -109,12 +112,13 @@ fn unexpected(phase: Phase) -> Vec<Action> {
 /// Advance the machine by one event. Returns the actions to execute.
 pub fn transition(state: &mut RunState, event: Event) -> Vec<Action> {
     match (state.phase, event) {
-        (Phase::Idle, Event::Start { path, format, count, out, fixture_text, check }) => {
+        (Phase::Idle, Event::Start { path, format, count, out, fixture_text, check, mode }) => {
             state.format_override = format;
             state.count_override = count;
             state.out_path = out;
             state.fixture_text = fixture_text;
             state.check = check;
+            state.mode = Some(mode);
             state.phase = Phase::Loading;
             vec![Action::Read { path }]
         }
@@ -133,7 +137,8 @@ pub fn transition(state: &mut RunState, event: Event) -> Vec<Action> {
             state.format = Some(schema.format);
             state.schema = Some(schema.clone());
             state.phase = Phase::Generating;
-            vec![Action::Generate { schema }]
+            let mode = state.mode.unwrap_or(GenerationMode::Seeded);
+            vec![Action::Generate { schema, mode }]
         }
         (Phase::Generating, Event::Generated { dataset }) => {
             state.dataset = Some(dataset.clone());

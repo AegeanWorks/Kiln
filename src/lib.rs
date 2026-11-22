@@ -7,7 +7,9 @@
 
 pub mod cli;
 pub mod compare;
+pub mod drift;
 pub mod generate;
+pub mod json;
 pub mod machine;
 pub mod model;
 pub mod render;

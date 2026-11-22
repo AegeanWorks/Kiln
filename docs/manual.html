@@ -29,12 +29,15 @@ record User {
 }</pre>
 <h2>Commands</h2>
 <ul>
-<li><code>kiln generate &lt;schema&gt; [--format json|csv] [--count N] [--out FILE]</code></li>
+<li><code>kiln generate &lt;schema&gt; [--format json|jsonl|csv] [--count N] [--out FILE] [--edges]</code></li>
 <li><code>kiln check &lt;schema&gt; --fixture &lt;FILE&gt;</code></li>
 <li><code>kiln demo --scripted [--seed N]</code></li>
 <li><code>kiln inventory</code></li>
 <li><code>kiln explain</code></li>
 </ul>
+<h2>Boundaries and drift</h2>
+<p><code>--edges</code> replaces seeded records with boundary records: one all-minimum row, one all-maximum row, then one row per field where only that field is raised to its maximum. It does not use the seed or count, so the boundary suite never changes.</p>
+<p><code>kiln check</code> compares bytes, but a mismatch also prints a bounded, path-qualified report. JSON and JSONL changes are located as <code>$.rows[0].id</code> or <code>lines[2]</code>; CSV changes as <code>rows[0].id</code>. Added, removed and changed values are marked with <code>+</code>, <code>-</code> and <code>~</code>. The report is computed in the pure core and never alters the verdict.</p>
 <h2>Architecture</h2>
 <p>The core is pure: schema reading, the seeded stream, generation, rendering, comparison, argument parsing and the state machine perform no I/O. The shell performs every file read, file write and print. The boundary is two data types: schema text enters, rendered bytes leave. Side effects are represented as actions emitted by the state machine and executed only at the edge.</p>
 <h2>Determinism</h2>

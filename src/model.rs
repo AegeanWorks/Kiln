@@ -4,6 +4,7 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Format {
     Json,
+    Jsonl,
     Csv,
 }
 
@@ -11,6 +12,7 @@ impl Format {
     pub fn label(self) -> &'static str {
         match self {
             Format::Json => "json",
+            Format::Jsonl => "jsonl",
             Format::Csv => "csv",
         }
     }
@@ -18,10 +20,18 @@ impl Format {
     pub fn parse(value: &str) -> Result<Self, String> {
         match value.trim().to_ascii_lowercase().as_str() {
             "json" => Ok(Format::Json),
+            "jsonl" => Ok(Format::Jsonl),
             "csv" => Ok(Format::Csv),
-            other => Err(format!("unknown format '{}'; expected json or csv", other)),
+            other => Err(format!("unknown format '{}'; expected json, jsonl or csv", other)),
         }
     }
+}
+
+/// Which deterministic generator supplies the records.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum GenerationMode {
+    Seeded,
+    Edges,
 }
 
 /// A field's generator. Ranges are inclusive; floats are stored as integer

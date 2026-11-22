@@ -5,8 +5,8 @@ use std::collections::VecDeque;
 use std::fs;
 
 use kiln_core::machine::{self, Action, Event, RunState};
-use kiln_core::model::Format;
-use kiln_core::{compare, generate, render, schema};
+use kiln_core::model::{Format, GenerationMode, Verdict};
+use kiln_core::{compare, drift, generate, render, schema};
 
 /// Write to stdout. Kept here so the core never touches a stream.
 pub fn print_out(text: &str) {
@@ -65,14 +65,23 @@ fn run_machine(start: Event) -> i32 {
                     Ok(()) => queue.push_back(Event::Validated { schema: parsed }),
                     Err(error) => queue.push_back(Event::Failed { message: parse_failure(&error) }),
                 },
-                Action::Generate { schema: parsed } => {
-                    queue.push_back(Event::Generated { dataset: generate::generate(&parsed) });
+                Action::Generate { schema: parsed, mode } => {
+                    let dataset = match mode {
+                        GenerationMode::Edges => generate::generate_edges(&parsed),
+                        GenerationMode::Seeded => generate::generate(&parsed),
+                    };
+                    queue.push_back(Event::Generated { dataset });
                 }
                 Action::Render { dataset, format } => {
                     queue.push_back(Event::Rendered { rendered: render::render(&dataset, format) });
                 }
                 Action::Compare { expected, actual } => {
-                    queue.push_back(Event::Compared { verdict: compare::compare_fixture(&expected, &actual) });
+                    let verdict = compare::compare_fixture(&expected, &actual);
+                    if verdict == Verdict::Fail {
+                        let format = state.format.unwrap_or(Format::Json);
+                        print_out(&drift::drift_report(&expected, &actual, format));
+                    }
+                    queue.push_back(Event::Compared { verdict });
                 }
                 Action::Write { path, text } => {
                     if let Err(message) = write_text(&path, &text) {
@@ -98,6 +107,7 @@ pub fn run_generate(
     format: Option<Format>,
     count: Option<usize>,
     out: Option<String>,
+    edges: bool,
 ) -> i32 {
     run_machine(Event::Start {
         path,
@@ -106,6 +116,7 @@ pub fn run_generate(
         out,
         fixture_text: String::new(),
         check: false,
+        mode: if edges { GenerationMode::Edges } else { GenerationMode::Seeded },
     })
 }
 
@@ -119,6 +130,7 @@ pub fn run_check(path: String, fixture: String) -> i32 {
             out: None,
             fixture_text: text,
             check: true,
+            mode: GenerationMode::Seeded,
         }),
         Err(message) => {
             print_err(&message);
@@ -163,7 +175,7 @@ pub fn demo(seed: i64) -> i32 {
 
 /// Machine-readable inventory of the command surface.
 pub fn inventory() -> i32 {
-    println!("cli|generate|kiln generate <schema.kiln>");
+    println!("cli|generate|kiln generate <schema.kiln> [--edges]");
     println!("cli|check|kiln check <schema.kiln> --fixture <file>");
     println!("cli|demo|--scripted [--seed N]");
     println!("handler|run|kiln-run");
@@ -177,7 +189,9 @@ pub fn explain() -> i32 {
     println!("  Imperative shell  - only shell.rs reads files, writes files and prints");
     println!("  I/O at the edges  - the core receives text and returns Action values");
     println!("  Explicit machine  - Idle > Loading > Parsing > Validating > Generating > Rendering > Done");
-    println!("Schema keys: version, seed, count, format (json|csv), record Name {{ field: type }}");
+    println!("Modes: seeded (default, uses seed and count) or --edges (min/max boundaries, ignores seed and count)");
+    println!("Schema keys: version, seed, count, format (json|jsonl|csv), record Name {{ field: type }}");
     println!("Field types: int(a..b), float(a..b) in hundredths, bool, enum(a,b), string(\"pre\",a..b), list(type,a..b)");
+    println!("Drift: kiln check prints path-qualified changes when a committed fixture no longer matches");
     0
 }

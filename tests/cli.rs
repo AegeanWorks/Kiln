@@ -8,6 +8,23 @@ use std::process::{Command, Output};
 use kiln_core::model::Verdict;
 
 const GOLDEN_JSON: &str = include_str!("../examples/users.json");
+const GOLDEN_JSONL: &str = include_str!("../examples/users.jsonl");
+
+// Same fields as the example, different seed: edge generation must not change.
+const EXAMPLE_SCHEMA_SEED_SWAP: &str = r#"version = 1
+seed = 7
+count = 4
+format = json
+
+record User {
+  id: int(1..9999)
+  name: enum(Alice, Bob, Cara, Deniz)
+  active: bool
+  score: float(0..10000)
+  handle: string("u_", 3..6)
+  tags: list(enum(red, green, blue), 0..3)
+}
+"#;
 
 fn kiln() -> Command {
     Command::new(env!("CARGO_BIN_EXE_kiln"))
@@ -114,6 +131,43 @@ fn out_writes_a_file_and_keeps_stdout_clean() {
     cleanup(&out);
     assert_eq!(written.trim_end(), GOLDEN_JSON.trim_end());
     assert_eq!(stdout(&output), "wrote fixture to output file\n");
+}
+
+#[test]
+fn jsonl_matches_the_golden_fixture() {
+    let output = kiln()
+        .args(["generate", "examples/users.kiln", "--format", "jsonl"])
+        .output()
+        .unwrap();
+    assert!(output.status.success(), "{}", stderr(&output));
+    assert_eq!(stdout(&output).trim_end(), GOLDEN_JSONL.trim_end());
+}
+
+#[test]
+fn edges_mode_is_reproducible_and_ignores_the_seed() {
+    let first = kiln().args(["generate", "examples/users.kiln", "--edges"]).output().unwrap();
+    let schema_path = write_temp("edge-seed", "kiln", EXAMPLE_SCHEMA_SEED_SWAP);
+    let second = kiln().arg("generate").arg(&schema_path).arg("--edges").output().unwrap();
+    cleanup(&schema_path);
+    assert!(first.status.success());
+    assert!(second.status.success());
+    assert_eq!(stdout(&first), stdout(&second));
+    assert!(stdout(&first).contains("\"id\": 1,"));
+    assert!(stdout(&first).contains("\"id\": 9999,"));
+}
+
+#[test]
+fn check_mismatch_prints_a_path_qualified_drift_report() {
+    let fixture = write_temp("drift", "json", "{\"count\": 1}\n");
+    let output = kiln()
+        .args(["check", "examples/users.kiln", "--fixture"])
+        .arg(&fixture)
+        .output()
+        .unwrap();
+    cleanup(&fixture);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(stdout(&output).contains("fixture drift"), "{}", stdout(&output));
+    assert!(stdout(&output).contains("$.count"), "{}", stdout(&output));
 }
 
 #[test]

@@ -10,6 +10,7 @@ pub enum Command {
         format: Option<Format>,
         count: Option<usize>,
         out: Option<String>,
+        edges: bool,
     },
     Check {
         schema: String,
@@ -27,7 +28,7 @@ pub enum Command {
 pub fn usage() -> String {
     let mut out = String::from("kiln — deterministic test-fixture forge\n\n");
     out.push_str("Usage:\n");
-    out.push_str("  kiln generate <schema.kiln> [--format json|csv] [--count N] [--out FILE]\n");
+    out.push_str("  kiln generate <schema.kiln> [--format json|jsonl|csv] [--count N] [--out FILE] [--edges]\n");
     out.push_str("  kiln check <schema.kiln> --fixture <FILE>\n");
     out.push_str("  kiln demo --scripted [--seed N]\n");
     out.push_str("  kiln inventory\n");
@@ -62,9 +63,11 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
             let mut format = None;
             let mut count = None;
             let mut out = None;
+            let mut edges = false;
             let mut i = 0;
             while i < rest.len() {
                 match rest[i].as_str() {
+                    "--edges" => edges = true,
                     "--format" => {
                         let value = take_value(rest, &mut i, "--format")?;
                         format = Some(Format::parse(&value).map_err(|message| error(&message))?);
@@ -85,7 +88,7 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
                 i += 1;
             }
             let schema = schema.ok_or_else(|| error("generate needs a schema path"))?;
-            Ok(Command::Generate { schema, format, count, out })
+            Ok(Command::Generate { schema, format, count, out, edges })
         }
         "check" => {
             let mut schema: Option<String> = None;

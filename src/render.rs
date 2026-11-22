@@ -71,6 +71,20 @@ pub fn render_json(dataset: &Dataset) -> String {
     out
 }
 
+/// One compact JSON object per line, with declaration-order keys.
+pub fn render_jsonl(dataset: &Dataset) -> String {
+    let mut out = String::new();
+    for row in &dataset.records {
+        let parts: Vec<String> = row
+            .values
+            .iter()
+            .map(|(name, value)| format!("{}: {}", json_string(name), json_value(value)))
+            .collect();
+        out.push_str(&format!("{{{}}}\n", parts.join(", ")));
+    }
+    out
+}
+
 fn csv_cell(value: &str) -> String {
     if value.contains(',') || value.contains('"') || value.contains('\n') || value.contains('\r') {
         format!("\"{}\"", value.replace('"', "\"\""))
@@ -94,6 +108,7 @@ pub fn render_csv(dataset: &Dataset) -> String {
 pub fn render(dataset: &Dataset, format: Format) -> Rendered {
     let text = match format {
         Format::Json => render_json(dataset),
+        Format::Jsonl => render_jsonl(dataset),
         Format::Csv => render_csv(dataset),
     };
     Rendered {

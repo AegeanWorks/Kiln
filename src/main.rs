@@ -17,8 +17,8 @@ fn main() -> ExitCode {
         Ok(Command::Explain) => shell::explain(),
         Ok(Command::Inventory) => shell::inventory(),
         Ok(Command::Demo { seed }) => shell::demo(seed),
-        Ok(Command::Generate { schema, format, count, out }) => {
-            shell::run_generate(schema, format, count, out)
+        Ok(Command::Generate { schema, format, count, out, edges }) => {
+            shell::run_generate(schema, format, count, out, edges)
         }
         Ok(Command::Check { schema, fixture }) => shell::run_check(schema, fixture),
         Err(message) => {

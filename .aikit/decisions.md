@@ -39,3 +39,24 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: python aikit.py new created demo.py and inventory.py, but the project must be Rust-only; compat commands are configurable in .aikit/compat.json
 - **Decision**: Delete the Python files and point compat commands at the kiln binary's demo and inventory subcommands
 - **Consequences**: Rust-only tree; the compat gate still proves inventory format and seeded replay determinism; the AIKit gap is recorded in reports
+
+### ADR-005: Add deterministic boundary-value generation mode
+- **Date**: 2026-11-22
+- **Status**: Accepted
+- **Context**: Seeded random fixtures rarely hit min/max values; programmers still hand-write boundary tests
+- **Decision**: --edges generates all-low, all-high and one-field-at-a-time-high records from schema bounds without using the seeded stream
+- **Consequences**: Edge mode is independent of seed and count; golden tests pin its exact record order
+
+### ADR-006: Report structural fixture drift instead of a bare mismatch
+- **Date**: 2026-11-22
+- **Status**: Accepted
+- **Context**: kiln check said only DIFFER, leaving the programmer to find what changed in a large fixture
+- **Decision**: Parse both JSON or CSV documents into order-preserving generic trees and emit a deterministic path-qualified change list on mismatch
+- **Consequences**: A small restricted parser is added to the pure core; diff output is golden-tested and never affects the MATCH verdict
+
+### ADR-007: Add JSONL as a third output format
+- **Date**: 2026-11-22
+- **Status**: Accepted
+- **Context**: Streaming test pipelines and log-style fixtures want one JSON object per line
+- **Decision**: Add Format::Jsonl with a pure line-oriented renderer that preserves declaration-order fields
+- **Consequences**: Schema format key, CLI flag, docs and golden fixtures are extended together
