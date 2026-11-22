@@ -8,6 +8,8 @@
 
 Kiln is a zero-dependency, deterministic Rust CLI that forges reproducible JSON and CSV test fixtures from a tiny typed schema and a seed, so programmers get stable, reviewable test data offline.
 
+> **Archived**: Testbed for AIKit and related tooling; no longer needed. (archived 2026-11-22). This project is read-only; its GitHub repository is archived.
+
 ## ⚡ 30-Second Cold-Start Quick Reference
 
 - **Runtime Prerequisites**: Rust 1.70+ (edition 2021; verified on 1.100); a C linker for the host target (mingw-w64 gcc on Windows, configured in `.cargo/config.toml`). No crates.io dependencies, no network, no runtime service.

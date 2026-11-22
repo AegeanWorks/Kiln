@@ -36,5 +36,11 @@
     "docs/manual.html"
   ],
   "ui_checked_at": "2026-11-22",
-  "ui_source": "manual"
+  "ui_source": "manual",
+  "archived": true,
+  "archived_at": "2026-11-22",
+  "archive_reason": "Testbed for AIKit and related tooling; no longer needed.",
+  "archive_repo": "AegeanWorks/Kiln",
+  "archive_description": "[ARCHIVED] Kiln is a zero-dependency, deterministic Rust CLI that forges reproducible JSON and CSV test fixtures from a tiny typed schema and a seed, so programmers get stable, reviewable test data offline.",
+  "archive_origin": "projects/kiln"
 }
