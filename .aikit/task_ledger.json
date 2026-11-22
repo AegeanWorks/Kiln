@@ -1,13 +1,13 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "kiln-v06",
+    "task_id": "kiln-v07",
     "last_phase": "phase 4",
     "active_phase": 5,
     "status": "completed",
-    "updated_at": 1795314602.8726919,
+    "updated_at": 1795314908.9919786,
     "owner": "opencode:kiln",
-    "lease_until": 1795321802.8726919,
+    "lease_until": 1795322108.9919786,
     "started_by": "opencode:kiln",
     "continuations": [],
     "workspaces": [
@@ -16,70 +16,11 @@
         "path": "projects/kiln"
       }
     ],
-    "completed_at": 1795314606.0469892,
-    "completed_head": "d56603eb70da63296904a52f32e3c0e26e1c9a36",
-    "completed_tree": "e6a2629e47a970fdcc5f3f9b909a232b24a9e750"
+    "completed_at": 1795314909.448919,
+    "completed_head": "b62902345e6da181276a701ed8a7d2783935de30",
+    "completed_tree": "863e5c78c4366e6557be13144f68967b308d929a"
   },
   "checkpoints": [
-    {
-      "task_id": "kiln-readme-sync",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'kiln-readme-sync' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795311416.432789,
-      "timestamp_str": "2026-11-22 04:36:56",
-      "agent": "opencode",
-      "head": "552b0d273b02af57e53341fa0e3c892ecbc6849e",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
-    {
-      "task_id": "kiln-v02",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/4] Plan v0.2: boundary fixtures, structural drift report, JSONL output",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795311694.2218306,
-      "timestamp_str": "2026-11-22 04:41:34",
-      "agent": "opencode:kiln",
-      "impact_assessment": {
-        "why": "Programmers need boundary-value test data and actionable fixture-drift diagnostics, not just a pass/fail byte check",
-        "benefits": "Fewer hand-written edge cases; reviewable drift diffs; streaming-friendly fixture format",
-        "risks": "contract: JSONL and drift text become public output; dependency: std only; concurrency: single-threaded pure functions; state: new generation mode must not perturb seeded stream",
-        "mitigation": "Golden byte tests for all formats, pure deterministic edge generation independent of the seeded stream, ADRs recorded before edits"
-      },
-      "plan_digest": "1b733835c437a541f21e768cd7772a0e95979164bb29aea9fa4bbdf09cb2c949",
-      "workspaces": [
-        {
-          "name": "kiln",
-          "path": "projects/kiln"
-        }
-      ]
-    },
-    {
-      "task_id": "kiln-v02",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[2/4] Boundary generation, JSONL renderer, JSON/CSV drift diff, docs and audit updated; 29 tests green",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795312406.116774,
-      "timestamp_str": "2026-11-22 04:53:26",
-      "agent": "opencode:kiln",
-      "checklists": "passed",
-      "workspaces": [
-        {
-          "name": "kiln",
-          "path": "projects/kiln"
-        }
-      ]
-    },
     {
       "task_id": "kiln-v02",
       "phase": "completed",
@@ -395,6 +336,65 @@
       "timestamp_str": "2026-11-22 05:30:06",
       "agent": "opencode",
       "head": "d56603eb70da63296904a52f32e3c0e26e1c9a36",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
+    },
+    {
+      "task_id": "kiln-v07",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "[1/2] Plan v0.7: schema field introspection command",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795314656.4144893,
+      "timestamp_str": "2026-11-22 05:30:56",
+      "agent": "opencode:kiln",
+      "impact_assessment": {
+        "why": "Programmers need a machine-readable description of a schema for docs and CI checks",
+        "benefits": "One command lists field names, types and bounds without regenerating data",
+        "risks": "contract: field descriptor output is public; dependency: std only; concurrency: none; state: one-shot pure transformation",
+        "mitigation": "Golden text and JSON tests, ADR recorded before edits"
+      },
+      "plan_digest": "6ce5bbccf539196f2700017c7192cb10253de67ac4c5ff1071e5ca6d18df48a0",
+      "workspaces": [
+        {
+          "name": "kiln",
+          "path": "projects/kiln"
+        }
+      ]
+    },
+    {
+      "task_id": "kiln-v07",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[1/2] Field introspection command with text and JSON output; 54 tests green; six gates pass",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795314908.9919786,
+      "timestamp_str": "2026-11-22 05:35:08",
+      "agent": "opencode:kiln",
+      "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "kiln",
+          "path": "projects/kiln"
+        }
+      ]
+    },
+    {
+      "task_id": "kiln-v07",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'kiln-v07' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795314909.512341,
+      "timestamp_str": "2026-11-22 05:35:09",
+      "agent": "opencode",
+      "head": "b62902345e6da181276a701ed8a7d2783935de30",
       "delivery": {
         "roots": [
           "."
