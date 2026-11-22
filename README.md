@@ -104,7 +104,8 @@ This lets the whole generation pipeline be tested without a filesystem, while th
 
 ```text
 kiln/
-├── .cargo/config.toml        <- GNU target (this host has no MSVC link.exe)
+├── .cargo/                   <- Cargo build configuration
+│   └── config.toml           <- GNU target (this host has no MSVC link.exe)
 ├── .gitattributes            <- LF line endings on every platform
 ├── .gitignore                <- transient AIKit state excluded
 ├── LICENSE                   <- Aegean License 1.1 (AL-1.1): free personal use
@@ -114,15 +115,24 @@ kiln/
 ├── Cargo.toml                <- no external crates
 ├── Cargo.lock                <- pinned lockfile (only this crate)
 ├── README.md
-├── src/
+├── src/                      <- pure core plus thin executable edges
 │   ├── main.rs               <- executable edge: argv in, ExitCode out
 │   ├── shell.rs              <- imperative shell: all fs and stdout/stderr I/O
-│   └── lib.rs                <- the pure functional core (8 modules)
+│   ├── lib.rs                <- exports the eight pure core modules
+│   ├── model.rs              <- frozen data types
+│   ├── schema.rs             <- versioned schema reader and validator
+│   ├── rng.rs                <- fixed xorshift64 stream
+│   ├── generate.rs           <- seeded dataset generation
+│   ├── render.rs             <- JSON and CSV renderers
+│   ├── compare.rs            <- fixture byte comparison
+│   ├── machine.rs            <- explicit generation state machine
+│   └── cli.rs                <- pure argument parser
 ├── tests/
 │   ├── core.rs               <- golden bytes, PRNG, validation, state machine, CLI parser
 │   └── cli.rs                <- binary contracts: inventory, replay, gate exit codes
-├── docs/manual.html          <- self-contained local command reference
-├── docs/architecture-audit.md <- FC / shell / edges / state-machine audit evidence
+├── docs/                     <- local documentation
+│   ├── manual.html           <- self-contained local command reference
+│   └── architecture-audit.md <- FC / shell / edges / state-machine audit evidence
 ├── examples/
 │   ├── users.kiln            <- example schema
 │   ├── users.json            <- golden JSON fixture
