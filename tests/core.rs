@@ -419,6 +419,7 @@ fn json_schema_export_maps_every_field_type() {
     assert!(text.contains("\"score\": {\"type\":\"number\",\"minimum\":0.00,\"maximum\":100.00}"));
     assert!(text.contains("\"enum\":[\"Alice\",\"Bob\",\"Cara\",\"Deniz\"]"));
     assert!(text.contains("\"type\":\"array\""));
+    assert!(text.contains("\"pattern\":\"^u_\""));
     assert!(text.contains("\"additionalProperties\": false"));
     let parsed = kiln_core::json::parse(&text).expect("export must be valid JSON");
     assert!(matches!(parsed, kiln_core::json::Json::Object(_)));

@@ -7,6 +7,17 @@ fn cents(value: i64) -> String {
     format!("{}.{:02}", value / 100, value % 100)
 }
 
+fn escape_pattern(text: &str) -> String {
+    let mut out = String::new();
+    for c in text.chars() {
+        if "\\.+*?()|[]{}^$".contains(c) {
+            out.push('\\');
+        }
+        out.push(c);
+    }
+    out
+}
+
 fn render_type(kind: &FieldType) -> String {
     match kind {
         FieldType::Int { min, max } => format!(
@@ -25,14 +36,18 @@ fn render_type(kind: &FieldType) -> String {
         }
         FieldType::String { prefix, min_len, max_len } => {
             let base = prefix.len();
-            let description = if prefix.is_empty() {
+            let constraint = if prefix.is_empty() {
                 String::new()
             } else {
-                format!(",\"description\":{}", quoted(&format!("prefix: {}", prefix)))
+                format!(
+                    ",\"description\":{},\"pattern\":{}",
+                    quoted(&format!("prefix: {}", prefix)),
+                    quoted(&format!("^{}", escape_pattern(prefix)))
+                )
             };
             format!(
                 "{{\"type\":\"string\"{},\"minLength\":{},\"maxLength\":{}}}",
-                description,
+                constraint,
                 base + min_len,
                 base + max_len
             )
