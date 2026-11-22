@@ -318,6 +318,25 @@ fn corpus_rejects_an_oversized_range() {
 }
 
 #[test]
+fn fields_command_lists_schema_details() {
+    let output = kiln().args(["fields", "examples/users.kiln"]).output().unwrap();
+    assert!(output.status.success(), "{}", stderr(&output));
+    let text = stdout(&output);
+    assert!(text.contains("schema: User"), "{}", text);
+    assert!(text.contains("1..9999"), "{}", text);
+    assert!(text.contains("tags"), "{}", text);
+}
+
+#[test]
+fn fields_json_is_machine_readable() {
+    let output = kiln().args(["fields", "examples/users.kiln", "--json"]).output().unwrap();
+    assert!(output.status.success());
+    let text = stdout(&output);
+    assert!(text.contains("\"record\":\"User\""), "{}", text);
+    assert!(text.contains("\"name\":\"handle\""), "{}", text);
+}
+
+#[test]
 fn working_directory_does_not_change_the_bytes() {
     let output = Command::new(env!("CARGO_BIN_EXE_kiln"))
         .current_dir("examples")

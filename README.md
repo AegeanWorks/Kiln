@@ -81,6 +81,7 @@ Validation refuses an unknown schema version, an inverted or oversized range, du
 | `kiln check --manifest <kiln.toml>` | Verify every declared fixture in order; exit 0 if all match, 1 if any differs, 2 on a manifest error |
 | `kiln diff <left> <right> [--format FMT]` | Structurally compare two committed fixtures without regenerating; format is inferred from the left extension |
 | `kiln corpus <schema> --seeds A..B --out-dir DIR [--format FMT]` | Write one deterministic fixture per seed (≤1000), named `<record>_<seed>.<ext>` |
+| `kiln fields <schema> [--json]` | List field names, types, details and bounds in declaration order |
 | `kiln demo --scripted [--seed N]` | Headless WORLD-DELTA drive used by AIKit's compat gate |
 | `kiln inventory` | `kind\|name\|locator` lines describing the command surface |
 | `kiln explain` | Architecture and schema reference |
@@ -128,7 +129,7 @@ Changing the generator is a deliberate golden update, which is the review this k
 
 | Constraint | Implementation |
 |---|---|
-| Functional Core | `src/schema.rs`, `rng.rs`, `generate.rs`, `render.rs`, `compare.rs`, `json.rs`, `drift.rs`, `report.rs`, `manifest.rs`, `corpus.rs`, `machine.rs`, `cli.rs` and `model.rs` are pure: data in, data out. They contain no `std::fs`, `std::env`, clock, OS randomness or process exit. |
+| Functional Core | `src/schema.rs`, `rng.rs`, `generate.rs`, `render.rs`, `compare.rs`, `json.rs`, `drift.rs`, `report.rs`, `manifest.rs`, `corpus.rs`, `introspect.rs`, `machine.rs`, `cli.rs` and `model.rs` are pure: data in, data out. They contain no `std::fs`, `std::env`, clock, OS randomness or process exit. |
 | Imperative Shell | `src/shell.rs` owns every file read/write and every print. `src/main.rs` reads argv and converts the shell's integer code to `ExitCode`. |
 | I/O at the Edges | The boundary is two frozen DTOs: schema text enters, a `Rendered` value leaves. Side effects are represented as `Action` values emitted by the pure machine and executed only in the shell. |
 | Explicit State Machines | `GenerateState` moves through `Idle → Loading → Parsing → Validating → Generating → Rendering → Done`, with `Comparing` for the fixture gate and `Failed` for any diagnosed error. Each event has one transition; an event in the wrong phase yields an error action, never a silent no-op. |
@@ -153,7 +154,7 @@ kiln/
 ├── src/                      <- pure core plus thin executable edges
 │   ├── main.rs               <- executable edge: argv in, ExitCode out
 │   ├── shell.rs              <- imperative shell: all fs and stdout/stderr I/O
-│   ├── lib.rs                <- exports the thirteen pure core modules
+│   ├── lib.rs                <- exports the fourteen pure core modules
 │   ├── model.rs              <- frozen data types and generation mode
 │   ├── schema.rs             <- versioned schema reader and validator
 │   ├── rng.rs                <- fixed xorshift64 stream
@@ -165,6 +166,7 @@ kiln/
 │   ├── manifest.rs           <- versioned manifest and its run state machine
 │   ├── report.rs             <- versioned JSON reports for CI
 │   ├── corpus.rs             <- bounded seed corpus and its write machine
+│   ├── introspect.rs         <- schema field descriptions for docs and CI
 │   ├── machine.rs            <- explicit generation state machine
 │   └── cli.rs                <- pure argument parser
 ├── tests/
@@ -185,7 +187,7 @@ kiln/
 
 ## Verification
 
-`cargo test` runs 50 tests: 28 pure-core tests and 22 binary integration tests. The AIKit Phase 4 gate runs hygiene, guidelines, secrets, compat, test and a project-declared `fixtures` gate that verifies every committed fixture with `kiln check --manifest`; `python aikit.py check kiln --all-gates` reported `6/6 gates passed`.
+`cargo test` runs 54 tests: 30 pure-core tests and 24 binary integration tests. The AIKit Phase 4 gate runs hygiene, guidelines, secrets, compat, test and a project-declared `fixtures` gate that verifies every committed fixture with `kiln check --manifest`; `python aikit.py check kiln --all-gates` reported `6/6 gates passed`.
 
 ## 📜 License
 

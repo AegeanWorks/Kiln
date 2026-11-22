@@ -26,6 +26,7 @@ fn main() -> ExitCode {
         Ok(Command::Corpus { schema, start, end, format, out_dir }) => {
             shell::run_corpus(schema, start, end, format, out_dir)
         }
+        Ok(Command::Fields { schema, json }) => shell::run_fields(schema, json),
         Err(message) => {
             shell::print_err(&message);
             2

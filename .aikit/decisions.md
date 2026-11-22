@@ -95,3 +95,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: Programmers need many deterministic fixtures for property tests, and a silent shell loop would hide partial failure
 - **Decision**: Prepare all seed renders in the pure core, then let CorpusRun emit one Write action per file in seed order with an explicit index
 - **Consequences**: The corpus is bounded, ordered and reviewable; writes remain at the shell edge with diagnosed errors
+
+### ADR-013: Add schema field introspection
+- **Date**: 2026-11-22
+- **Status**: Accepted
+- **Context**: Documentation and CI need the declared field types and bounds without parsing a .kiln file themselves
+- **Decision**: kiln fields reads and validates a schema, then renders a stable text table or JSON array from a pure introspection module
+- **Consequences**: A one-shot pure command; no extra state machine is warranted

@@ -3,7 +3,7 @@
 use crate::drift::Change;
 use crate::model::{Format, Verdict};
 
-fn quoted(value: &str) -> String {
+pub fn quoted(value: &str) -> String {
     let mut out = String::from("\"");
     for c in value.chars() {
         match c {

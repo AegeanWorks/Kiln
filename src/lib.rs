@@ -10,6 +10,7 @@ pub mod compare;
 pub mod corpus;
 pub mod drift;
 pub mod generate;
+pub mod introspect;
 pub mod json;
 pub mod machine;
 pub mod manifest;

@@ -35,6 +35,10 @@ pub enum Command {
         format: Option<Format>,
         out_dir: String,
     },
+    Fields {
+        schema: String,
+        json: bool,
+    },
     Demo {
         seed: i64,
     },
@@ -54,6 +58,7 @@ pub fn usage() -> String {
     out.push_str("  kiln diff <left> <right> [--format json|jsonl|csv]\n");
     out.push_str("  kiln demo --scripted [--seed N]\n");
     out.push_str("  kiln corpus <schema.kiln> --seeds A..B --out-dir DIR [--format FMT]\n");
+    out.push_str("  kiln fields <schema.kiln> [--json]\n");
     out.push_str("  kiln inventory\n");
     out.push_str("  kiln explain\n\n");
     out.push_str("Add --json to check, diff or check --manifest for a machine-readable report.\n");
@@ -188,6 +193,23 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
             let schema = schema.ok_or_else(|| error("check needs a schema path"))?;
             let fixture = fixture.ok_or_else(|| error("check needs --fixture <FILE>"))?;
             Ok(Command::Check { schema, fixture, json })
+        }
+        "fields" => {
+            let mut schema = None;
+            let mut json = false;
+            for item in rest {
+                if item == "--json" {
+                    json = true;
+                } else if item.starts_with('-') && item != "-" {
+                    return Err(error(&format!("unknown flag '{}'", item)));
+                } else if schema.is_some() {
+                    return Err(error("fields takes exactly one schema path"));
+                } else {
+                    schema = Some(item.clone());
+                }
+            }
+            let schema = schema.ok_or_else(|| error("fields needs a schema path"))?;
+            Ok(Command::Fields { schema, json })
         }
         "corpus" => {
             let mut schema = None;

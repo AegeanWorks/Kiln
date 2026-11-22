@@ -320,6 +320,31 @@ pub fn run_corpus(path: String, start: u64, end: u64, format: Option<Format>, ou
     code
 }
 
+/// `fields` command: describe a schema without generating any data.
+pub fn run_fields(path: String, json: bool) -> i32 {
+    let parsed = read_text(&path).and_then(|text| {
+        let schema = schema::parse(&text).map_err(|error| parse_failure(&error))?;
+        schema::validate(&schema).map_err(|error| parse_failure(&error))?;
+        Ok(schema)
+    });
+    match parsed {
+        Ok(schema) => {
+            let fields = kiln_core::introspect::describe(&schema);
+            let text = if json {
+                kiln_core::introspect::render_json(&schema, &fields)
+            } else {
+                kiln_core::introspect::render_text(&schema, &fields)
+            };
+            print_out(&text);
+            0
+        }
+        Err(message) => {
+            print_err(&message);
+            2
+        }
+    }
+}
+
 fn demo_schema(seed: i64) -> String {
     let positive = seed.max(0) as u64;
     let mut text = String::from("version = 1\nseed = ");
@@ -361,6 +386,7 @@ pub fn inventory() -> i32 {
     println!("cli|manifest|kiln check --manifest <kiln.toml>");
     println!("cli|diff|kiln diff <left> <right> [--format FMT]");
     println!("cli|corpus|kiln corpus <schema> --seeds A..B --out-dir DIR");
+    println!("cli|fields|kiln fields <schema.kiln> [--json]");
     println!("cli|demo|--scripted [--seed N]");
     println!("handler|run|kiln-run");
     0
@@ -380,5 +406,6 @@ pub fn explain() -> i32 {
     println!("Review: kiln diff compares two committed fixtures; kiln check --manifest gates them all");
     println!("Manifest lines: version = 1, then 'fixture = <schema>, <fixture>, <format>' per entry");
     println!("Corpus: kiln corpus <schema> --seeds A..B --out-dir DIR writes one fixture per seed");
+    println!("Fields: kiln fields <schema> [--json] lists field names, types, details and bounds");
     0
 }

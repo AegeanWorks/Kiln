@@ -390,6 +390,28 @@ fn cli_parses_corpus_command() {
 }
 
 #[test]
+fn introspection_lists_every_field_in_order() {
+    let schema = example_schema();
+    let fields = kiln_core::introspect::describe(&schema);
+    assert_eq!(fields.len(), schema.fields.len());
+    assert_eq!(fields[0].name, "id");
+    assert_eq!(fields[0].kind, "int");
+    assert_eq!(fields[0].bounds, "1..9999");
+    assert_eq!(fields[1].kind, "enum");
+    assert!(fields[1].detail.contains("variants: Alice"));
+    let text = kiln_core::introspect::render_text(&schema, &fields);
+    assert!(text.contains("schema: User"));
+    let json = kiln_core::introspect::render_json(&schema, &fields);
+    assert!(json.contains("\"record\":\"User\""));
+}
+
+#[test]
+fn cli_parses_fields_command() {
+    let args = vec!["fields".to_string(), "s.kiln".to_string(), "--json".to_string()];
+    assert_eq!(cli::parse(&args).unwrap(), Command::Fields { schema: "s.kiln".to_string(), json: true });
+}
+
+#[test]
 fn cli_rejects_unknown_commands_with_a_diagnosis() {
     let error = cli::parse(&["bogus".to_string()]).expect_err("unknown command must fail");
     assert!(error.contains("Why:"), "{}", error);
