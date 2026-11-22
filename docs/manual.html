@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiln manual</title>
+<style>
+body { font-family: system-ui, sans-serif; max-width: 52rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+code, pre { font-family: ui-monospace, monospace; background: #f3f3f3; }
+pre { padding: 1rem; overflow-x: auto; }
+h2 { margin-top: 2rem; }
+</style>
+</head>
+<body>
+<h1>Kiln manual</h1>
+<p>Kiln forges reproducible JSON and CSV test fixtures from a typed schema and a seed. This page is a local, self-contained copy of the command reference; the README is the canonical quick start.</p>
+<h2>Schema</h2>
+<pre>version = 1
+seed = 20261122
+count = 4
+format = json
+
+record User {
+  id: int(1..9999)
+  name: enum(Alice, Bob, Cara, Deniz)
+  active: bool
+  score: float(0..10000)
+  handle: string("u_", 3..6)
+  tags: list(enum(red, green, blue), 0..3)
+}</pre>
+<h2>Commands</h2>
+<ul>
+<li><code>kiln generate &lt;schema&gt; [--format json|csv] [--count N] [--out FILE]</code></li>
+<li><code>kiln check &lt;schema&gt; --fixture &lt;FILE&gt;</code></li>
+<li><code>kiln demo --scripted [--seed N]</code></li>
+<li><code>kiln inventory</code></li>
+<li><code>kiln explain</code></li>
+</ul>
+<h2>Architecture</h2>
+<p>The core is pure: schema reading, the seeded stream, generation, rendering, comparison, argument parsing and the state machine perform no I/O. The shell performs every file read, file write and print. The boundary is two data types: schema text enters, rendered bytes leave. Side effects are represented as actions emitted by the state machine and executed only at the edge.</p>
+<h2>Determinism</h2>
+<p>The same schema and seed produce the same bytes on every platform: one fixed xorshift64* stream, declaration-order fields, integer hundredths for decimals, and no hash-map iteration or clock reads. The check command turns that promise into a gate: it regenerates the fixture and compares bytes, normalizing line endings and trailing blank lines.</p>
+</body>
+</html>

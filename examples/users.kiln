@@ -1,0 +1,15 @@
+# Kiln example: four deterministic user records.
+# Same version + seed + schema always yields the same bytes.
+version = 1
+seed = 20261122
+count = 4
+format = json
+
+record User {
+  id: int(1..9999)
+  name: enum(Alice, Bob, Cara, Deniz)
+  active: bool
+  score: float(0..10000)
+  handle: string("u_", 3..6)
+  tags: list(enum(red, green, blue), 0..3)
+}

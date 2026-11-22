@@ -3,8 +3,8 @@
   "kind": "headless",
   "has_ui": false,
   "commands": {
-    "inventory": "python inventory.py",
-    "scripted": "python demo.py --scripted"
+    "inventory": "cargo run --quiet --bin kiln -- inventory",
+    "scripted": "cargo run --quiet --bin kiln -- demo --scripted"
   },
   "seed": {
     "flag": "--seed",

@@ -1,0 +1,39 @@
+{
+  "record": "User",
+  "count": 4,
+  "fields": ["id", "name", "active", "score", "handle", "tags"],
+  "rows": [
+    {
+      "id": 5001,
+      "name": "Deniz",
+      "active": true,
+      "score": 79.82,
+      "handle": "u_ws9l",
+      "tags": ["green"]
+    },
+    {
+      "id": 1121,
+      "name": "Deniz",
+      "active": true,
+      "score": 59.01,
+      "handle": "u_jlsc",
+      "tags": ["green"]
+    },
+    {
+      "id": 7246,
+      "name": "Alice",
+      "active": false,
+      "score": 28.99,
+      "handle": "u_lnnpw",
+      "tags": ["green"]
+    },
+    {
+      "id": 1536,
+      "name": "Deniz",
+      "active": false,
+      "score": 26.22,
+      "handle": "u_ct8f",
+      "tags": []
+    }
+  ]
+}

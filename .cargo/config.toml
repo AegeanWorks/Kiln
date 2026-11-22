@@ -1,0 +1,4 @@
+[build]
+# This host has no MSVC link.exe; the installed GNU target uses the available
+# mingw-w64 gcc. Matches projects/keystone and projects/sextant.
+target = "x86_64-pc-windows-gnu"

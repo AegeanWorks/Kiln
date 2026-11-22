@@ -1,0 +1,17 @@
+[package]
+name = "kiln"
+version = "0.1.0"
+edition = "2021"
+description = "Deterministic, zero-dependency test-fixture forge for programmers"
+license = "LicenseRef-AL-1.1"
+rust-version = "1.70"
+
+[lib]
+name = "kiln_core"
+path = "src/lib.rs"
+
+[[bin]]
+name = "kiln"
+path = "src/main.rs"
+
+[dependencies]

@@ -1,0 +1,128 @@
+//! Pure command-line argument parsing. No environment reads.
+
+use crate::model::Format;
+
+/// A parsed command; the shell decides what to do with it.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Command {
+    Generate {
+        schema: String,
+        format: Option<Format>,
+        count: Option<usize>,
+        out: Option<String>,
+    },
+    Check {
+        schema: String,
+        fixture: String,
+    },
+    Demo {
+        seed: i64,
+    },
+    Inventory,
+    Explain,
+    Help,
+}
+
+/// Stable usage text, also printed by `--help`.
+pub fn usage() -> String {
+    let mut out = String::from("kiln — deterministic test-fixture forge\n\n");
+    out.push_str("Usage:\n");
+    out.push_str("  kiln generate <schema.kiln> [--format json|csv] [--count N] [--out FILE]\n");
+    out.push_str("  kiln check <schema.kiln> --fixture <FILE>\n");
+    out.push_str("  kiln demo --scripted [--seed N]\n");
+    out.push_str("  kiln inventory\n");
+    out.push_str("  kiln explain\n\n");
+    out.push_str("Exit codes: 0 success or match, 1 fixture mismatch, 2 misuse or I/O error.\n");
+    out
+}
+
+fn error(message: &str) -> String {
+    format!("{}\nWhy: a wrong command line cannot generate trustworthy fixtures.\nFix: kiln --help\n\n{}", message, usage())
+}
+
+fn take_value(args: &[String], index: &mut usize, flag: &str) -> Result<String, String> {
+    *index += 1;
+    args.get(*index)
+        .cloned()
+        .ok_or_else(|| error(&format!("{} needs a value", flag)))
+}
+
+/// Parse arguments into a command. All validation is pure string work.
+pub fn parse(args: &[String]) -> Result<Command, String> {
+    if args.is_empty() || args[0] == "--help" || args[0] == "-h" {
+        return Ok(Command::Help);
+    }
+    let command = args[0].as_str();
+    let rest = &args[1..];
+    match command {
+        "inventory" => Ok(Command::Inventory),
+        "explain" => Ok(Command::Explain),
+        "generate" => {
+            let mut schema: Option<String> = None;
+            let mut format = None;
+            let mut count = None;
+            let mut out = None;
+            let mut i = 0;
+            while i < rest.len() {
+                match rest[i].as_str() {
+                    "--format" => {
+                        let value = take_value(rest, &mut i, "--format")?;
+                        format = Some(Format::parse(&value).map_err(|message| error(&message))?);
+                    }
+                    "--count" => {
+                        let value = take_value(rest, &mut i, "--count")?;
+                        count = Some(value.parse::<usize>().map_err(|_| error("--count needs a positive integer"))?);
+                    }
+                    "--out" => out = Some(take_value(rest, &mut i, "--out")?),
+                    other if other.starts_with('-') => return Err(error(&format!("unknown flag '{}'", other))),
+                    other => {
+                        if schema.is_some() {
+                            return Err(error("generate takes exactly one schema path"));
+                        }
+                        schema = Some(other.to_string());
+                    }
+                }
+                i += 1;
+            }
+            let schema = schema.ok_or_else(|| error("generate needs a schema path"))?;
+            Ok(Command::Generate { schema, format, count, out })
+        }
+        "check" => {
+            let mut schema: Option<String> = None;
+            let mut fixture = None;
+            let mut i = 0;
+            while i < rest.len() {
+                match rest[i].as_str() {
+                    "--fixture" => fixture = Some(take_value(rest, &mut i, "--fixture")?),
+                    other if other.starts_with('-') => return Err(error(&format!("unknown flag '{}'", other))),
+                    other => {
+                        if schema.is_some() {
+                            return Err(error("check takes exactly one schema path"));
+                        }
+                        schema = Some(other.to_string());
+                    }
+                }
+                i += 1;
+            }
+            let schema = schema.ok_or_else(|| error("check needs a schema path"))?;
+            let fixture = fixture.ok_or_else(|| error("check needs --fixture <FILE>"))?;
+            Ok(Command::Check { schema, fixture })
+        }
+        "demo" => {
+            if !rest.iter().any(|item| item == "--scripted") {
+                return Err(error("demo needs --scripted"));
+            }
+            let mut seed = 0i64;
+            let mut i = 0;
+            while i < rest.len() {
+                if rest[i] == "--seed" {
+                    let value = take_value(rest, &mut i, "--seed")?;
+                    seed = value.parse::<i64>().map_err(|_| error("--seed needs an integer"))?;
+                }
+                i += 1;
+            }
+            Ok(Command::Demo { seed })
+        }
+        other => Err(error(&format!("unknown command '{}'", other))),
+    }
+}
