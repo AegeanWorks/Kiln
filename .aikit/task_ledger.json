@@ -1,13 +1,13 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "kiln-mvp",
+    "task_id": "kiln-readme-sync",
     "last_phase": "phase 4",
     "active_phase": 5,
     "status": "completed",
-    "updated_at": 1795311323.1128783,
+    "updated_at": 1795311413.6506128,
     "owner": "opencode:kiln",
-    "lease_until": 1795318523.1128783,
+    "lease_until": 1795318613.6506128,
     "started_by": "opencode:kiln",
     "continuations": [],
     "workspaces": [
@@ -16,9 +16,10 @@
         "path": "projects/kiln"
       }
     ],
-    "completed_at": 1795311323.5403063,
-    "completed_head": "45b6cd27ad704f2489ff54046a670daae6250fdf",
-    "completed_tree": "b39bd36df2e6ca7fe432f18aabd2c8a1389e4f61"
+    "completed_without_impact_assessment": true,
+    "completed_at": 1795311416.2794013,
+    "completed_head": "552b0d273b02af57e53341fa0e3c892ecbc6849e",
+    "completed_tree": "19f4eb01587519891e900c99626b268caeb2bfac"
   },
   "checkpoints": [
     {
@@ -107,6 +108,41 @@
       "timestamp_str": "2026-11-22 04:35:23",
       "agent": "opencode",
       "head": "45b6cd27ad704f2489ff54046a670daae6250fdf",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
+    },
+    {
+      "task_id": "kiln-readme-sync",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[1/1] Sync README tree with every tracked path after commit; all five gates re-run green",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795311413.6506128,
+      "timestamp_str": "2026-11-22 04:36:53",
+      "agent": "opencode:kiln",
+      "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "kiln",
+          "path": "projects/kiln"
+        }
+      ]
+    },
+    {
+      "task_id": "kiln-readme-sync",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'kiln-readme-sync' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795311416.432789,
+      "timestamp_str": "2026-11-22 04:36:56",
+      "agent": "opencode",
+      "head": "552b0d273b02af57e53341fa0e3c892ecbc6849e",
       "delivery": {
         "roots": [
           "."
