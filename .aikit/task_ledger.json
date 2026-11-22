@@ -1,13 +1,13 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "kiln-v02-docs",
+    "task_id": "kiln-v03",
     "last_phase": "phase 4",
     "active_phase": 5,
     "status": "completed",
-    "updated_at": 1795312483.2509139,
+    "updated_at": 1795313159.7891061,
     "owner": "opencode:kiln",
-    "lease_until": 1795319683.2509139,
+    "lease_until": 1795320359.7891061,
     "started_by": "opencode:kiln",
     "continuations": [],
     "workspaces": [
@@ -16,10 +16,9 @@
         "path": "projects/kiln"
       }
     ],
-    "completed_without_impact_assessment": true,
-    "completed_at": 1795312486.8223202,
-    "completed_head": "2f54f218ac0394e9216968bfbaca03b9c80a22f5",
-    "completed_tree": "ad436ae08eadcbbf1824fac2d5e89fba1c091964"
+    "completed_at": 1795313160.2433646,
+    "completed_head": "8a5ddc506dd9d9c7e883bf18d516a385fc15b13f",
+    "completed_tree": "6054e20817ccb4e7ab995a4bc4810861b3fc2ea7"
   },
   "checkpoints": [
     {
@@ -254,6 +253,82 @@
       "timestamp_str": "2026-11-22 04:54:46",
       "agent": "opencode",
       "head": "2f54f218ac0394e9216968bfbaca03b9c80a22f5",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
+    },
+    {
+      "task_id": "kiln-v03",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "[1/4] Plan v0.3: fixture diff command and multi-fixture manifest gate",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795312558.8833241,
+      "timestamp_str": "2026-11-22 04:55:58",
+      "agent": "opencode:kiln",
+      "impact_assessment": {
+        "why": "Real projects keep several fixtures; reviewing and gating them one command at a time does not scale",
+        "benefits": "One CI command for all fixtures; structural diff of two committed fixtures without regenerating",
+        "risks": "contract: manifest format and exit codes are public; dependency: std only; concurrency: sequential entries; state: multi-fixture loop must be an explicit machine",
+        "mitigation": "Versioned manifest refused on unknown version, dedicated ManifestRun state machine, golden and CLI tests for both commands"
+      },
+      "plan_digest": "f12193a2f2e675bc1817e1cf83dbe14ea785114c75060859b49253f4929d2276",
+      "workspaces": [
+        {
+          "name": "kiln",
+          "path": "projects/kiln"
+        }
+      ]
+    },
+    {
+      "task_id": "kiln-v03",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[2/4] diff command, manifest reader, ManifestRun state machine, docs and audit; 38 tests green",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795313150.8431518,
+      "timestamp_str": "2026-11-22 05:05:50",
+      "agent": "opencode:kiln",
+      "workspaces": [
+        {
+          "name": "kiln",
+          "path": "projects/kiln"
+        }
+      ]
+    },
+    {
+      "task_id": "kiln-v03",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[3/4] Phase 4 gate shield green: hygiene, guidelines, secrets, compat, test; 38 tests pass",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795313159.7891061,
+      "timestamp_str": "2026-11-22 05:05:59",
+      "agent": "opencode:kiln",
+      "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "kiln",
+          "path": "projects/kiln"
+        }
+      ]
+    },
+    {
+      "task_id": "kiln-v03",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'kiln-v03' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795313160.3070123,
+      "timestamp_str": "2026-11-22 05:06:00",
+      "agent": "opencode",
+      "head": "8a5ddc506dd9d9c7e883bf18d516a385fc15b13f",
       "delivery": {
         "roots": [
           "."
