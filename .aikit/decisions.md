@@ -74,3 +74,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: Projects keep several schema/fixture pairs, and a CI gate must cover all of them deterministically
 - **Decision**: A kiln.toml manifest lists fixture entries; ManifestRun moves Idle > Reading > Parsing > Running(index) > Done with Failed on any error, and delegates each entry to the existing single-fixture machine
 - **Consequences**: Aggregate verdict is explicit and ordered; a new parser and a second state machine are added to the pure core
+
+### ADR-010: Run Kiln's manifest gate inside AIKit Phase 4
+- **Date**: 2026-11-22
+- **Status**: Accepted
+- **Context**: A project that sells fixture determinism should have its own fixtures gated by the same tool
+- **Decision**: Declare a custom 'fixtures' gate in .aikit/project.json that runs kiln check --manifest examples/kiln.toml
+- **Consequences**: Every AIKit check of Kiln now proves all committed fixtures; the gate is visible alongside hygiene, test and compat

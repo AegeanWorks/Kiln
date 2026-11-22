@@ -15,14 +15,17 @@ pub enum Command {
     Check {
         schema: String,
         fixture: String,
+        json: bool,
     },
     Diff {
         left: String,
         right: String,
         format: Option<Format>,
+        json: bool,
     },
     Manifest {
         path: String,
+        json: bool,
     },
     Demo {
         seed: i64,
@@ -43,6 +46,7 @@ pub fn usage() -> String {
     out.push_str("  kiln demo --scripted [--seed N]\n");
     out.push_str("  kiln inventory\n");
     out.push_str("  kiln explain\n\n");
+    out.push_str("Add --json to check, diff or check --manifest for a machine-readable report.\n");
     out.push_str("Exit codes: 0 success or match, 1 fixture mismatch, 2 misuse or I/O error.\n");
     out
 }
@@ -101,15 +105,29 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
             Ok(Command::Generate { schema, format, count, out, edges })
         }
         "check" if rest.first().map(|value| value.as_str()) == Some("--manifest") => {
-            let path = take_value(rest, &mut 0usize, "--manifest")?;
-            Ok(Command::Manifest { path })
+            let mut path = None;
+            let mut json = false;
+            let mut i = 0;
+            while i < rest.len() {
+                match rest[i].as_str() {
+                    "--manifest" => path = Some(take_value(rest, &mut i, "--manifest")?),
+                    "--json" => json = true,
+                    other if other.starts_with('-') => return Err(error(&format!("unknown flag '{}'", other))),
+                    other => return Err(error(&format!("unexpected argument '{}' with --manifest", other))),
+                }
+                i += 1;
+            }
+            let path = path.ok_or_else(|| error("check --manifest needs a path"))?;
+            Ok(Command::Manifest { path, json })
         }
         "diff" => {
             let mut paths = Vec::new();
             let mut format = None;
+            let mut json = false;
             let mut i = 0;
             while i < rest.len() {
                 match rest[i].as_str() {
+                    "--json" => json = true,
                     "--format" => {
                         let value = take_value(rest, &mut i, "--format")?;
                         format = Some(Format::parse(&value).map_err(|message| error(&message))?);
@@ -126,14 +144,17 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
                 left: paths.remove(0),
                 right: paths.remove(0),
                 format,
+                json,
             })
         }
         "check" => {
             let mut schema: Option<String> = None;
             let mut fixture = None;
+            let mut json = false;
             let mut i = 0;
             while i < rest.len() {
                 match rest[i].as_str() {
+                    "--json" => json = true,
                     "--fixture" => fixture = Some(take_value(rest, &mut i, "--fixture")?),
                     other if other.starts_with('-') => return Err(error(&format!("unknown flag '{}'", other))),
                     other => {
@@ -147,7 +168,7 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
             }
             let schema = schema.ok_or_else(|| error("check needs a schema path"))?;
             let fixture = fixture.ok_or_else(|| error("check needs --fixture <FILE>"))?;
-            Ok(Command::Check { schema, fixture })
+            Ok(Command::Check { schema, fixture, json })
         }
         "demo" => {
             if !rest.iter().any(|item| item == "--scripted") {

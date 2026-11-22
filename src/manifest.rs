@@ -113,6 +113,7 @@ pub struct ManifestRun {
     pub text: String,
     pub manifest: Option<Manifest>,
     pub verdicts: Vec<Verdict>,
+    pub json: bool,
 }
 
 impl ManifestRun {
@@ -122,13 +123,14 @@ impl ManifestRun {
             text: String::new(),
             manifest: None,
             verdicts: Vec::new(),
+            json: false,
         }
     }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ManifestEvent {
-    Start { path: String },
+    Start { path: String, json: bool },
     Loaded { text: String },
     Parsed { manifest: Manifest },
     EntryDone { verdict: Verdict },
@@ -167,7 +169,8 @@ fn summary(verdicts: &[Verdict]) -> String {
 /// order; an error at any point stops the run with exit code 2.
 pub fn transition(state: &mut ManifestRun, event: ManifestEvent) -> Vec<ManifestAction> {
     match (state.phase, event) {
-        (ManifestPhase::Idle, ManifestEvent::Start { path }) => {
+        (ManifestPhase::Idle, ManifestEvent::Start { path, json }) => {
+            state.json = json;
             state.phase = ManifestPhase::Reading;
             vec![ManifestAction::Read { path }]
         }
@@ -197,10 +200,12 @@ pub fn transition(state: &mut ManifestRun, event: ManifestEvent) -> Vec<Manifest
             } else {
                 state.phase = ManifestPhase::Done;
                 let code = if state.verdicts.iter().all(|value| *value == Verdict::Pass) { 0 } else { 1 };
-                vec![
-                    ManifestAction::Print { text: summary(&state.verdicts) },
-                    ManifestAction::Exit { code },
-                ]
+                let text = if state.json {
+                    crate::report::render_manifest(&state.verdicts)
+                } else {
+                    summary(&state.verdicts)
+                };
+                vec![ManifestAction::Print { text }, ManifestAction::Exit { code }]
             }
         }
         (_, ManifestEvent::Failed { message }) => {

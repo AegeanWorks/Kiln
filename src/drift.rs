@@ -251,21 +251,30 @@ fn render_change(change: &Change) -> String {
     }
 }
 
-/// A bounded, readable list of what changed. Parsing failures are reported as
-/// such; the byte verdict from `compare` remains authoritative.
-pub fn drift_report(expected: &str, actual: &str, format: Format) -> String {
-    let parsed = match format {
+/// Structured changes between two fixture texts. The byte verdict from
+/// `compare` remains authoritative; this is the explanation, not the gate.
+pub fn changes(expected: &str, actual: &str, format: Format) -> Result<Vec<Change>, String> {
+    match format {
         Format::Json => crate::json::parse(expected)
             .and_then(|left| crate::json::parse(actual).map(|right| (left, right)))
             .map(|(left, right)| {
-                let mut changes = Vec::new();
-                diff_json(&left, &right, "$", &mut changes);
-                changes
+                let mut found = Vec::new();
+                diff_json(&left, &right, "$", &mut found);
+                found
             }),
         Format::Jsonl => diff_jsonl(expected, actual),
         Format::Csv => diff_csv(expected, actual),
-    };
-    let changes = match parsed {
+    }
+}
+
+pub fn count_changes(expected: &str, actual: &str, format: Format) -> usize {
+    changes(expected, actual, format).map(|value| value.len()).unwrap_or(0)
+}
+
+/// A bounded, readable list of what changed. Parsing failures are reported as
+/// such; the byte verdict from `compare` remains authoritative.
+pub fn drift_report(expected: &str, actual: &str, format: Format) -> String {
+    let changes = match changes(expected, actual, format) {
         Ok(value) => value,
         Err(error) => {
             return format!("fixture drift: cannot parse committed fixture as {}: {}\n", format.label(), error);

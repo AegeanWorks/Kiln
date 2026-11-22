@@ -20,9 +20,9 @@ fn main() -> ExitCode {
         Ok(Command::Generate { schema, format, count, out, edges }) => {
             shell::run_generate(schema, format, count, out, edges)
         }
-        Ok(Command::Check { schema, fixture }) => shell::run_check(schema, fixture),
-        Ok(Command::Diff { left, right, format }) => shell::run_diff(left, right, format),
-        Ok(Command::Manifest { path }) => shell::run_manifest(path),
+        Ok(Command::Check { schema, fixture, json }) => shell::run_check(schema, fixture, json),
+        Ok(Command::Diff { left, right, format, json }) => shell::run_diff(left, right, format, json),
+        Ok(Command::Manifest { path, json }) => shell::run_manifest(path, json),
         Err(message) => {
             shell::print_err(&message);
             2

@@ -43,6 +43,8 @@ record User {
 <h2>Manifest and review</h2>
 <p>A <code>kiln.toml</code> manifest gates every committed fixture in one command. It starts with <code>version = 1</code>, then one line per fixture: <code>fixture = schema, fixture, format[, seeded|edges]</code>. Entries run in declared order and the summary reports how many matched. The optional mode selects boundary generation instead of the seeded stream.</p>
 <p><code>kiln diff</code> compares two committed fixtures with the same structural differ used by <code>check</code>, so a review can see paths and values without regenerating anything. The format is inferred from the left file extension unless <code>--format</code> is supplied.</p>
+<h2>Machine-readable output</h2>
+<p>Add <code>--json</code> to <code>check</code>, <code>diff</code> or <code>check --manifest</code> to get one stable JSON object with <code>"schema":1</code>, a verdict and an ordered change list where relevant. Exit codes do not change, so the same command works for a terminal and for CI.</p>
 <h2>Architecture</h2>
 <p>The core is pure: schema reading, the seeded stream, generation, rendering, comparison, argument parsing and the state machine perform no I/O. The shell performs every file read, file write and print. The boundary is two data types: schema text enters, rendered bytes leave. Side effects are represented as actions emitted by the state machine and executed only at the edge.</p>
 <h2>Determinism</h2>

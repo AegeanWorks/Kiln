@@ -18,7 +18,9 @@
     "local-first",
     "developer-tools"
   ],
-  "gates": {},
+  "gates": {
+    "fixtures": "cargo run --quiet --bin kiln -- check --manifest examples/kiln.toml"
+  },
   "ui_required": false,
   "map_coverage": "skip",
   "review_required": false,

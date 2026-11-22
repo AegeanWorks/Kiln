@@ -7,7 +7,7 @@ use std::fs;
 use kiln_core::machine::{self, Action, Event, RunState};
 use kiln_core::manifest::{self, ManifestAction, ManifestEvent, ManifestRun};
 use kiln_core::model::{Format, GenerationMode, Verdict};
-use kiln_core::{compare, drift, generate, render, schema};
+use kiln_core::{compare, drift, generate, render, report, schema};
 
 /// Write to stdout. Kept here so the core never touches a stream.
 pub fn print_out(text: &str) {
@@ -45,7 +45,7 @@ fn parse_failure(error: &str) -> String {
 }
 
 /// Drive the state machine until it requests an exit. Returns its exit code.
-fn run_machine(start: Event) -> i32 {
+fn run_machine(start: Event, quiet: bool) -> i32 {
     let mut state = RunState::new();
     let mut queue: VecDeque<Event> = VecDeque::new();
     queue.push_back(start);
@@ -78,18 +78,23 @@ fn run_machine(start: Event) -> i32 {
                 }
                 Action::Compare { expected, actual } => {
                     let verdict = compare::compare_fixture(&expected, &actual);
-                    if verdict == Verdict::Fail {
-                        let format = state.format.unwrap_or(Format::Json);
+                    let format = state.format.unwrap_or(Format::Json);
+                    let count = drift::count_changes(&expected, &actual, format);
+                    if verdict == Verdict::Fail && !state.json && !quiet {
                         print_out(&drift::drift_report(&expected, &actual, format));
                     }
-                    queue.push_back(Event::Compared { verdict });
+                    queue.push_back(Event::Compared { verdict, changes: count });
                 }
                 Action::Write { path, text } => {
                     if let Err(message) = write_text(&path, &text) {
                         queue.push_back(Event::Failed { message });
                     }
                 }
-                Action::Print { text } => print_out(&text),
+                Action::Print { text } => {
+                    if !quiet {
+                        print_out(&text);
+                    }
+                }
                 Action::Error { message } => print_err(&message),
                 Action::Exit { code: requested } => {
                     code = requested;
@@ -118,12 +123,13 @@ pub fn run_generate(
         fixture_text: String::new(),
         check: false,
         mode: if edges { GenerationMode::Edges } else { GenerationMode::Seeded },
-    })
+        json: false,
+    }, false)
 }
 
 /// One fixture check. The format override is used by manifest entries, which
 /// declare their own format rather than inheriting it from the schema.
-fn run_single_check(path: String, fixture: String, format: Option<Format>, mode: GenerationMode) -> i32 {
+fn run_single_check(path: String, fixture: String, format: Option<Format>, mode: GenerationMode, json: bool, quiet: bool) -> i32 {
     match read_text(&fixture) {
         Ok(text) => run_machine(Event::Start {
             path,
@@ -133,7 +139,8 @@ fn run_single_check(path: String, fixture: String, format: Option<Format>, mode:
             fixture_text: text,
             check: true,
             mode,
-        }),
+            json,
+        }, quiet),
         Err(message) => {
             print_err(&message);
             2
@@ -142,12 +149,12 @@ fn run_single_check(path: String, fixture: String, format: Option<Format>, mode:
 }
 
 /// `check` command: read the committed fixture at the edge, then compare.
-pub fn run_check(path: String, fixture: String) -> i32 {
-    run_single_check(path, fixture, None, GenerationMode::Seeded)
+pub fn run_check(path: String, fixture: String, json: bool) -> i32 {
+    run_single_check(path, fixture, None, GenerationMode::Seeded, json, false)
 }
 
 /// `diff` command: compare two committed fixtures without regenerating.
-pub fn run_diff(left: String, right: String, format: Option<Format>) -> i32 {
+pub fn run_diff(left: String, right: String, format: Option<Format>, json: bool) -> i32 {
     let chosen = match format {
         Some(value) => value,
         None => match Format::from_path(&left) {
@@ -173,21 +180,23 @@ pub fn run_diff(left: String, right: String, format: Option<Format>) -> i32 {
         }
     };
     let verdict = compare::compare_fixture(&first, &second);
-    if verdict == Verdict::Pass {
+    if json {
+        let found = drift::changes(&first, &second, chosen).unwrap_or_default();
+        print_out(&report::render_diff(verdict, &found));
+    } else if verdict == Verdict::Pass {
         print_out("fixtures MATCH: byte-identical after normalization\n");
-        0
     } else {
         print_out(&drift::drift_report(&first, &second, chosen));
         print_out("fixtures DIFFER\n");
-        1
     }
+    if verdict == Verdict::Pass { 0 } else { 1 }
 }
 
 /// `check --manifest` command: an explicit machine walks every declared entry.
-pub fn run_manifest(path: String) -> i32 {
+pub fn run_manifest(path: String, json: bool) -> i32 {
     let mut state = ManifestRun::new();
     let mut queue: VecDeque<ManifestEvent> = VecDeque::new();
-    queue.push_back(ManifestEvent::Start { path });
+    queue.push_back(ManifestEvent::Start { path, json });
     let mut code = 0;
     while let Some(event) = queue.pop_front() {
         for action in manifest::transition(&mut state, event) {
@@ -211,7 +220,7 @@ pub fn run_manifest(path: String) -> i32 {
                 },
                 ManifestAction::RunEntry { entry } => {
                     let verdict = Verdict::from_equal(
-                        run_single_check(entry.schema, entry.fixture, Some(entry.format), entry.mode) == 0,
+                        run_single_check(entry.schema, entry.fixture, Some(entry.format), entry.mode, false, state.json) == 0,
                     );
                     queue.push_back(ManifestEvent::EntryDone { verdict });
                 }

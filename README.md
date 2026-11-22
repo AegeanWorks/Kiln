@@ -16,7 +16,7 @@ Kiln is a zero-dependency, deterministic Rust CLI that forges reproducible JSON 
 | Role | Command |
 |---|---|
 | Status, task and gates | `python aikit.py status kiln` |
-| Phase 4: every gate | `python aikit.py check kiln --all-gates` |
+| Phase 4: every gate (incl. Kiln's own fixtures) | `python aikit.py check kiln --all-gates` |
 | Repair memory and map, then check | `python aikit.py fix kiln` |
 | Resume an interrupted task | `python aikit.py resume kiln` |
 
@@ -84,6 +84,9 @@ Validation refuses an unknown schema version, an inverted or oversized range, du
 | `kiln inventory` | `kind\|name\|locator` lines describing the command surface |
 | `kiln explain` | Architecture and schema reference |
 
+`check`, `diff` and `check --manifest` accept `--json` and print one stable, versioned JSON object
+(`"schema":1`) with the verdict and, where relevant, the ordered change list. Exit codes are unchanged.
+
 Exit codes: `0` success or fixture match, `1` fixture mismatch, `2` argument, schema or I/O error. Errors name the cause (`Why:`) and the remedy (`Fix:`) instead of a bare failure.
 
 ## Boundary fixtures and drift reports
@@ -124,7 +127,7 @@ Changing the generator is a deliberate golden update, which is the review this k
 
 | Constraint | Implementation |
 |---|---|
-| Functional Core | `src/schema.rs`, `rng.rs`, `generate.rs`, `render.rs`, `compare.rs`, `json.rs`, `drift.rs`, `manifest.rs`, `machine.rs`, `cli.rs` and `model.rs` are pure: data in, data out. They contain no `std::fs`, `std::env`, clock, OS randomness or process exit. |
+| Functional Core | `src/schema.rs`, `rng.rs`, `generate.rs`, `render.rs`, `compare.rs`, `json.rs`, `drift.rs`, `report.rs`, `manifest.rs`, `machine.rs`, `cli.rs` and `model.rs` are pure: data in, data out. They contain no `std::fs`, `std::env`, clock, OS randomness or process exit. |
 | Imperative Shell | `src/shell.rs` owns every file read/write and every print. `src/main.rs` reads argv and converts the shell's integer code to `ExitCode`. |
 | I/O at the Edges | The boundary is two frozen DTOs: schema text enters, a `Rendered` value leaves. Side effects are represented as `Action` values emitted by the pure machine and executed only in the shell. |
 | Explicit State Machines | `GenerateState` moves through `Idle → Loading → Parsing → Validating → Generating → Rendering → Done`, with `Comparing` for the fixture gate and `Failed` for any diagnosed error. Each event has one transition; an event in the wrong phase yields an error action, never a silent no-op. |
@@ -149,7 +152,7 @@ kiln/
 ├── src/                      <- pure core plus thin executable edges
 │   ├── main.rs               <- executable edge: argv in, ExitCode out
 │   ├── shell.rs              <- imperative shell: all fs and stdout/stderr I/O
-│   ├── lib.rs                <- exports the eleven pure core modules
+│   ├── lib.rs                <- exports the twelve pure core modules
 │   ├── model.rs              <- frozen data types and generation mode
 │   ├── schema.rs             <- versioned schema reader and validator
 │   ├── rng.rs                <- fixed xorshift64 stream
@@ -159,6 +162,7 @@ kiln/
 │   ├── json.rs               <- order-preserving JSON reader for drift
 │   ├── drift.rs              <- path-qualified structural drift report
 │   ├── manifest.rs           <- versioned manifest and its run state machine
+│   ├── report.rs             <- versioned JSON reports for CI
 │   ├── machine.rs            <- explicit generation state machine
 │   └── cli.rs                <- pure argument parser
 ├── tests/
@@ -179,7 +183,7 @@ kiln/
 
 ## Verification
 
-`cargo test` runs 38 tests: 23 pure-core tests and 15 binary integration tests. The AIKit Phase 4 gate additionally runs hygiene, guidelines, secret, compat and test checks; `python aikit.py check kiln --all-gates` is the canonical full report.
+`cargo test` runs 43 tests: 25 pure-core tests and 18 binary integration tests. The AIKit Phase 4 gate runs hygiene, guidelines, secrets, compat, test and a project-declared `fixtures` gate that verifies every committed fixture with `kiln check --manifest`; `python aikit.py check kiln --all-gates` reported `6/6 gates passed`.
 
 ## 📜 License
 

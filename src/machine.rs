@@ -32,6 +32,7 @@ pub struct RunState {
     pub out_path: Option<String>,
     pub fixture_text: String,
     pub check: bool,
+    pub json: bool,
 }
 
 impl RunState {
@@ -48,6 +49,7 @@ impl RunState {
             out_path: None,
             fixture_text: String::new(),
             check: false,
+            json: false,
         }
     }
 }
@@ -63,13 +65,14 @@ pub enum Event {
         fixture_text: String,
         check: bool,
         mode: GenerationMode,
+        json: bool,
     },
     Loaded { text: String },
     Parsed { schema: Schema },
     Validated { schema: Schema },
     Generated { dataset: Dataset },
     Rendered { rendered: Rendered },
-    Compared { verdict: Verdict },
+    Compared { verdict: Verdict, changes: usize },
     Failed { message: String },
 }
 
@@ -112,13 +115,14 @@ fn unexpected(phase: Phase) -> Vec<Action> {
 /// Advance the machine by one event. Returns the actions to execute.
 pub fn transition(state: &mut RunState, event: Event) -> Vec<Action> {
     match (state.phase, event) {
-        (Phase::Idle, Event::Start { path, format, count, out, fixture_text, check, mode }) => {
+        (Phase::Idle, Event::Start { path, format, count, out, fixture_text, check, mode, json }) => {
             state.format_override = format;
             state.count_override = count;
             state.out_path = out;
             state.fixture_text = fixture_text;
             state.check = check;
             state.mode = Some(mode);
+            state.json = json;
             state.phase = Phase::Loading;
             vec![Action::Read { path }]
         }
@@ -164,14 +168,19 @@ pub fn transition(state: &mut RunState, event: Event) -> Vec<Action> {
                 actions
             }
         }
-        (Phase::Comparing, Event::Compared { verdict }) => {
+        (Phase::Comparing, Event::Compared { verdict, changes }) => {
             state.phase = Phase::Done;
-            let mut actions = vec![Action::Print { text: crate::render::render_verdict(verdict) }];
-            actions.push(Action::Print { text: format!("verdict: {}\n", verdict.label()) });
-            actions.push(Action::Exit {
-                code: if verdict == Verdict::Pass { 0 } else { 1 },
-            });
-            actions
+            let text = if state.json {
+                crate::report::render_check(verdict, changes, state.format.unwrap_or(crate::model::Format::Json))
+            } else {
+                let mut human = crate::render::render_verdict(verdict);
+                human.push_str(&format!("verdict: {}\n", verdict.label()));
+                human
+            };
+            vec![
+                Action::Print { text },
+                Action::Exit { code: if verdict == Verdict::Pass { 0 } else { 1 } },
+            ]
         }
         (_, Event::Failed { message }) => {
             state.phase = Phase::Failed;

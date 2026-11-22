@@ -218,6 +218,43 @@ fn manifest_gate_aggregates_a_stale_fixture() {
 }
 
 #[test]
+fn check_json_report_is_machine_readable() {
+    let output = kiln()
+        .args(["check", "examples/users.kiln", "--fixture", "examples/users.json", "--json"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(0));
+    let text = stdout(&output);
+    assert!(text.contains("\"command\":\"check\""), "{}", text);
+    assert!(text.contains("\"verdict\":\"PASS\""), "{}", text);
+    assert!(text.contains("\"changes\":0"), "{}", text);
+}
+
+#[test]
+fn diff_json_report_lists_paths() {
+    let output = kiln()
+        .args(["diff", "examples/users.json", "examples/users-edges.json", "--json"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    let text = stdout(&output);
+    assert!(text.contains("\"command\":\"diff\""), "{}", text);
+    assert!(text.contains("\"path\":\"$.rows[0].id\""), "{}", text);
+}
+
+#[test]
+fn manifest_json_report_is_a_single_object() {
+    let output = kiln()
+        .args(["check", "--manifest", "examples/kiln.toml", "--json"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let text = stdout(&output);
+    assert_eq!(text.lines().count(), 1, "{}", text);
+    assert!(text.contains("\"matched\":3,\"total\":3"), "{}", text);
+}
+
+#[test]
 fn working_directory_does_not_change_the_bytes() {
     let output = Command::new(env!("CARGO_BIN_EXE_kiln"))
         .current_dir("examples")

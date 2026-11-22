@@ -6,7 +6,7 @@ from the project root.
 
 ## Constraint 1 — Functional Core
 
-`src/lib.rs` exports eleven modules; all are pure transformations of data:
+`src/lib.rs` exports twelve modules; all are pure transformations of data:
 
 | Module | Input → output | Effect-free claim |
 |---|---|---|
@@ -19,6 +19,7 @@ from the project root.
 | `json.rs` | `&str` → `Json` | order-preserving reader for Kiln's own output |
 | `drift.rs` | two `&str` + `Format` → report text | recursive structural diff, no I/O |
 | `manifest.rs` | text → `Manifest`; `ManifestRun` + event → actions | versioned reader and a second explicit state machine |
+| `report.rs` | verdicts/changes → JSON text | stable key order, no serialization dependency |
 | `machine.rs` | `&mut RunState` + `Event` → `Vec<Action>` | returns commands; executes none |
 | `cli.rs` | `&[String]` → `Result<Command, String>` | no `std::env` read |
 
@@ -28,7 +29,7 @@ Evidence command:
 grep -rn "std::fs|std::env|println!|eprintln!|print!|SystemTime|Instant|process::exit|ExitCode|fs::" src
 ```
 
-Result: 30 matches, **all in `src/main.rs` and `src/shell.rs`**; zero matches in the eleven core
+Result: 30 matches, **all in `src/main.rs` and `src/shell.rs`**; zero matches in the twelve core
 modules. The core cannot read a file, read argv, write output or exit a process.
 
 ## Constraint 2 — Imperative Shell / I/O at the Edges
@@ -85,7 +86,7 @@ so it has no stateful behaviour to model; it still performs all I/O in the shell
 ## Determinism evidence
 
 ```
-cargo test                     # 38 tests pass
+cargo test                     # 43 tests pass
 cargo run --quiet --bin kiln -- generate examples/users.kiln   # byte-identical on repeat runs
 cargo run --quiet --bin kiln -- check examples/users.kiln --fixture examples/users.json
 → fixture MATCH ... verdict: PASS (exit 0)
@@ -93,6 +94,14 @@ cargo run --quiet --bin kiln -- check examples/users.kiln --fixture examples/use
 
 Golden byte tests pin JSON and CSV output (`tests/core.rs::generation_matches_golden_*_bytes`), and the
 PRNG test proves seed sensitivity and repeatability.
+
+## Dogfooding through AIKit
+
+`.aikit/project.json` declares a custom `fixtures` gate that runs
+`kiln check --manifest examples/kiln.toml`. AIKit's Phase 4 therefore verifies every committed
+fixture with the same tool the project ships; `check kiln --all-gates` reported
+`6/6 gates passed`. The gate is ordinary project configuration, not an override of a built-in scan,
+so hygiene, guidelines, secrets, compat and test still run unchanged.
 
 ## Verdict
 

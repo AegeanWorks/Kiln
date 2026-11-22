@@ -14,5 +14,6 @@ pub mod machine;
 pub mod manifest;
 pub mod model;
 pub mod render;
+pub mod report;
 pub mod rng;
 pub mod schema;

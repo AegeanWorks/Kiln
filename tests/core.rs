@@ -91,6 +91,7 @@ fn machine_applies_count_and_format_overrides() {
         fixture_text: String::new(),
         check: false,
         mode: GenerationMode::Seeded,
+        json: false,
     });
     assert_eq!(state.phase, Phase::Loading);
     assert!(matches!(actions[0], Action::Read { .. }));
@@ -139,6 +140,7 @@ fn machine_check_mode_returns_a_nonzero_code_on_mismatch() {
         fixture_text: "stale bytes".to_string(),
         check: true,
         mode: GenerationMode::Seeded,
+        json: false,
     });
     machine::transition(&mut state, Event::Loaded { text: EXAMPLE_SCHEMA.to_string() });
     machine::transition(&mut state, Event::Parsed { schema: example_schema() });
@@ -148,7 +150,7 @@ fn machine_check_mode_returns_a_nonzero_code_on_mismatch() {
     let actions = machine::transition(&mut state, Event::Rendered { rendered });
     assert_eq!(state.phase, Phase::Comparing);
     assert!(actions.iter().any(|action| matches!(action, Action::Compare { .. })));
-    let actions = machine::transition(&mut state, Event::Compared { verdict: Verdict::Fail });
+    let actions = machine::transition(&mut state, Event::Compared { verdict: Verdict::Fail, changes: 3 });
     assert!(actions.iter().any(|action| matches!(action, Action::Exit { code: 1 })));
 }
 
@@ -260,6 +262,7 @@ fn manifest_machine_visits_every_entry_and_aggregates() {
     let mut state = ManifestRun::new();
     let actions = manifest::transition(&mut state, ManifestEvent::Start {
         path: "unused".to_string(),
+        json: false,
     });
     assert!(matches!(actions[0], manifest::ManifestAction::Read { .. }));
     manifest::transition(&mut state, ManifestEvent::Loaded { text: EXAMPLE_MANIFEST.to_string() });
@@ -290,10 +293,33 @@ fn cli_parses_diff_and_manifest_commands() {
             left: "a.json".to_string(),
             right: "b.json".to_string(),
             format: Some(Format::Csv),
+            json: false,
         }
     );
     let manifest = vec!["check".to_string(), "--manifest".to_string(), "kiln.toml".to_string()];
-    assert_eq!(cli::parse(&manifest).unwrap(), Command::Manifest { path: "kiln.toml".to_string() });
+    assert_eq!(
+        cli::parse(&manifest).unwrap(),
+        Command::Manifest { path: "kiln.toml".to_string(), json: false }
+    );
+}
+
+#[test]
+fn json_reports_have_stable_keys() {
+    assert_eq!(
+        kiln_core::report::render_check(Verdict::Pass, 0, Format::Json),
+        "{\"schema\":1,\"command\":\"check\",\"verdict\":\"PASS\",\"changes\":0,\"format\":\"json\"}\n"
+    );
+    let manifest = kiln_core::report::render_manifest(&[Verdict::Pass, Verdict::Fail]);
+    assert!(manifest.contains("\"matched\":1,\"total\":2"), "{}", manifest);
+}
+
+#[test]
+fn cli_parses_json_flag() {
+    let check = vec![
+        "check".to_string(), "s.kiln".to_string(), "--fixture".to_string(),
+        "f.json".to_string(), "--json".to_string(),
+    ];
+    assert!(matches!(cli::parse(&check).unwrap(), Command::Check { json: true, .. }));
 }
 
 #[test]
