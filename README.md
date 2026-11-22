@@ -194,6 +194,9 @@ kiln/
 ├── tests/
 │   ├── core.rs               <- golden bytes, PRNG, validation, state machine, CLI parser
 │   └── cli.rs                <- binary contracts: inventory, replay, gate exit codes
+├── assets/                   <- reviewed brand assets
+│   ├── logo.svg              <- terminal mark for Kiln
+│   └── social-preview.svg    <- 1280x640 project card
 ├── docs/                     <- local documentation
 │   ├── manual.html           <- self-contained local command reference
 │   └── architecture-audit.md <- FC / shell / edges / state-machine audit evidence
