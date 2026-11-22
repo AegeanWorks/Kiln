@@ -175,6 +175,11 @@ fn validate_jsonl(schema: &Schema, text: &str) -> Result<Vec<Issue>, String> {
                 None => add(&mut out, &path, "missing field".to_string()),
             }
         }
+        for (name, _) in fields {
+            if !schema.fields.iter().any(|field| field.name.as_str() == name.as_str()) {
+                add(&mut out, &format!("lines[{}].{}", line_index, name), "unexpected field".to_string());
+            }
+        }
     }
     Ok(out)
 }

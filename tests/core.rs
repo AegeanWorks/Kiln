@@ -447,6 +447,16 @@ fn validation_reports_out_of_range_and_missing_fields() {
 }
 
 #[test]
+fn jsonl_validation_reports_unexpected_fields() {
+    let schema = example_schema();
+    let line = GOLDEN_JSONL.lines().next().unwrap();
+    let with_extra = line.replace('}', ",\"surprise\": 1}");
+    let issues = kiln_core::validate::validate(&schema, &with_extra, Format::Jsonl).unwrap();
+    assert!(issues.iter().any(|issue| issue.path == "lines[0].surprise"
+        && issue.message == "unexpected field"), "{:?}", issues);
+}
+
+#[test]
 fn validation_rejects_malformed_fixtures_as_errors() {
     let schema = example_schema();
     assert!(kiln_core::validate::validate(&schema, "{not json", Format::Json).is_err());
