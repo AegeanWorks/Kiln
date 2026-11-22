@@ -1,6 +1,10 @@
 # Kiln
 
-[![Built with AIKit](https://img.shields.io/badge/built%20with-AIKit-6f42c1)](https://github.com/AegeanWorks/AIKit)
+<!-- aegean:media:start -->
+<p align="center"><img src="assets/social-preview.svg" alt="Kiln social preview" width="100%"></p>
+<p align="center"><a href="LICENSE"><img src="https://img.shields.io/badge/license-AL--1.1-2f9e44" alt="License"></a> <a href="https://github.com/AegeanWorks/AIKit"><img src="https://img.shields.io/badge/AIKit-integrated-6f42c1" alt="AIKit Integrated"></a></p>
+<!-- aegean:media:end -->
+
 
 Kiln is a zero-dependency, deterministic Rust CLI that forges reproducible JSON and CSV test fixtures from a tiny typed schema and a seed, so programmers get stable, reviewable test data offline.
 
@@ -206,6 +210,12 @@ kiln/
 ## Verification
 
 `cargo test` runs 67 tests: 38 pure-core tests and 29 binary integration tests. The AIKit Phase 4 gate runs hygiene, guidelines, secrets, compat, test and a project-declared `fixtures` gate that verifies every committed fixture with `kiln check --manifest`; `python aikit.py check kiln --all-gates` reported `6/6 gates passed`.
+
+<!-- aegean:brand-assets:start -->
+## 🎨 Brand Assets
+
+> **AI-Generated Brand Artwork.** The banner and logo are **AI-generated brand assets**. They are illustrative and may not literally depict every feature or the full project scope.
+<!-- aegean:brand-assets:end -->
 
 ## 📜 License
 

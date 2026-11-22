@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "name": "kiln",
+  "repo": "Kiln",
+  "has_ui": false,
+  "ui_kind": "library",
+  "palette": [
+    "#070c12",
+    "#141230",
+    "#6698f5",
+    "#df8ef5"
+  ],
+  "motif": "terminal",
+  "layout": "left",
+  "assets": {
+    "logo": {
+      "path": "assets/logo.svg",
+      "status": "approved",
+      "commit": "",
+      "generated_at": "2026-11-22T12:01:35",
+      "review": {
+        "status": "approved",
+        "reviewer": "agent:opencode:kiln",
+        "method": "structural",
+        "notes": "Local SVG terminal mark with KI initials and AegeanWorks footer; self-contained, no external assets",
+        "score": null,
+        "reviewed_at": "2026-11-22T12:02:12"
+      }
+    },
+    "social_preview": {
+      "path": "assets/social-preview.svg",
+      "status": "approved",
+      "commit": "",
+      "generated_at": "2026-11-22T12:01:35",
+      "review": {
+        "status": "approved",
+        "reviewer": "agent:opencode:kiln",
+        "method": "structural",
+        "notes": "1280x640 self-contained SVG with the project description and deterministic-fixture motif",
+        "score": null,
+        "reviewed_at": "2026-11-22T12:02:13"
+      }
+    }
+  },
+  "screenshots": []
+}
