@@ -45,7 +45,7 @@
       ],
       "status": "completed",
       "created": "2026-11-22T11:27:24",
-      "updated": "2026-11-22T12:00:43",
+      "updated": "2026-11-22T12:06:45",
       "last_audit": {
         "run": "run-1",
         "stage": 10,
@@ -371,7 +371,7 @@
           "delivery": {
             "commit": "1610b4d275abc352c40aaa80296cc6bb99bc593c",
             "short": "1610b4d",
-            "pushed": false,
+            "pushed": true,
             "push_error": null,
             "empty": false,
             "timestamp": "2026-11-22T11:35:01"
