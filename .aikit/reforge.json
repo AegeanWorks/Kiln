@@ -1,0 +1,605 @@
+{
+  "schema": 2,
+  "next_run_id": 2,
+  "active_run": "run-1",
+  "last_run": "run-1",
+  "runs": [
+    {
+      "id": "run-1",
+      "start": 3,
+      "step": 3,
+      "stop": null,
+      "stage": 1,
+      "window": 3,
+      "audited_commits": [
+        "92f8fd4d6d1363ac55e3ea085bad80db580c7030",
+        "cb88f970e71b81398ea19381b095c2b687393f8a",
+        "7675477bd0490a39a0ca2b152a2c3438bdbbd56c"
+      ],
+      "status": "active",
+      "created": "2026-11-22T11:27:24",
+      "updated": "2026-11-22T11:28:38",
+      "last_audit": {
+        "run": "run-1",
+        "stage": 1,
+        "window": 3,
+        "commits": [
+          "92f8fd4d6d1363ac55e3ea085bad80db580c7030",
+          "cb88f970e71b81398ea19381b095c2b687393f8a",
+          "7675477bd0490a39a0ca2b152a2c3438bdbbd56c"
+        ],
+        "new_commits": [
+          "92f8fd4d6d1363ac55e3ea085bad80db580c7030",
+          "cb88f970e71b81398ea19381b095c2b687393f8a",
+          "7675477bd0490a39a0ca2b152a2c3438bdbbd56c"
+        ],
+        "prior_commits": [],
+        "findings": [
+          {
+            "code": "review-check-row-lost-normalization",
+            "category": "review",
+            "severity": "low",
+            "path": "README.md",
+            "line": 80,
+            "message": "The rewritten check command row drops the documented promise that CRLF and trailing blank lines are normalized before comparison. A reader of the new row could assume byte-exact line endings are required, which contradicts compare::compare_fixture behaviour and the earlier documentation.",
+            "evidence": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift |",
+            "commit": "cb88f970e71b81398ea19381b095c2b687393f8a",
+            "hunk": "cb88f970e71b:README.md#1",
+            "symbol": "",
+            "introduced": true,
+            "reproducible": false,
+            "fixable": true,
+            "interaction": "",
+            "repaired": true,
+            "source": "review",
+            "patch_old": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift |",
+            "patch_new": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift; CRLF and trailing blank lines are normalized |"
+          },
+          {
+            "code": "review-manifest-cannot-express-seed",
+            "category": "improvement",
+            "severity": "medium",
+            "path": "src/shell.rs",
+            "line": 254,
+            "message": "The new seed override is wired into check but manifest entries still pass None, so a fixture generated with generate --seed cannot be gated by kiln check --manifest. The manifest DSL has a generation mode column but no seed column; adding one would make the override usable in CI.",
+            "evidence": "run_single_check(entry.schema, entry.fixture, Some(entry.format), entry.mode, false, state.json, None) == 0,",
+            "commit": "cb88f970e71b81398ea19381b095c2b687393f8a",
+            "hunk": "cb88f970e71b:src/shell.rs#4",
+            "symbol": "",
+            "introduced": true,
+            "reproducible": false,
+            "fixable": false,
+            "interaction": "",
+            "repaired": false,
+            "source": "review",
+            "patch_old": "",
+            "patch_new": ""
+          }
+        ],
+        "repairs": [
+          {
+            "code": "review-check-row-lost-normalization",
+            "path": "README.md",
+            "line": 80,
+            "summary": "applied review suggestion: The rewritten check command row drops the documented promise that CRLF and trail",
+            "test_name": "",
+            "applied": true
+          }
+        ],
+        "counts": {
+          "review": 1,
+          "improvement": 1
+        },
+        "reviewed": 8,
+        "review": {
+          "status": "reviewed",
+          "rejected": [],
+          "files": [
+            ".aikit/decisions.md",
+            "README.md",
+            "docs/architecture-audit.md",
+            "src/cli.rs",
+            "src/main.rs",
+            "src/shell.rs",
+            "tests/cli.rs",
+            "tests/core.rs"
+          ],
+          "packet": ".aikit/reforge.reviews/stage-run-1-1-92f8fd4d6d13.md",
+          "redacted": 0,
+          "coverage": {
+            "reported": 15,
+            "total": 15,
+            "carried": [],
+            "missing": [],
+            "unknown": [],
+            "invalid": []
+          },
+          "findings": [
+            {
+              "code": "review-check-row-lost-normalization",
+              "category": "review",
+              "severity": "low",
+              "path": "README.md",
+              "line": 80,
+              "message": "The rewritten check command row drops the documented promise that CRLF and trailing blank lines are normalized before comparison. A reader of the new row could assume byte-exact line endings are required, which contradicts compare::compare_fixture behaviour and the earlier documentation.",
+              "evidence": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift |",
+              "commit": "cb88f970e71b81398ea19381b095c2b687393f8a",
+              "hunk": "cb88f970e71b:README.md#1",
+              "symbol": "",
+              "introduced": true,
+              "reproducible": false,
+              "fixable": true,
+              "interaction": "",
+              "repaired": false,
+              "source": "review",
+              "patch_old": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift |",
+              "patch_new": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift; CRLF and trailing blank lines are normalized |"
+            },
+            {
+              "code": "review-manifest-cannot-express-seed",
+              "category": "improvement",
+              "severity": "medium",
+              "path": "src/shell.rs",
+              "line": 254,
+              "message": "The new seed override is wired into check but manifest entries still pass None, so a fixture generated with generate --seed cannot be gated by kiln check --manifest. The manifest DSL has a generation mode column but no seed column; adding one would make the override usable in CI.",
+              "evidence": "run_single_check(entry.schema, entry.fixture, Some(entry.format), entry.mode, false, state.json, None) == 0,",
+              "commit": "cb88f970e71b81398ea19381b095c2b687393f8a",
+              "hunk": "cb88f970e71b:src/shell.rs#4",
+              "symbol": "",
+              "introduced": true,
+              "reproducible": false,
+              "fixable": false,
+              "interaction": "",
+              "repaired": false,
+              "source": "review",
+              "patch_old": "",
+              "patch_new": ""
+            }
+          ],
+          "attestations": []
+        },
+        "skipped": [],
+        "tests": {
+          "command": "cargo test",
+          "code": 0,
+          "passed": true,
+          "output": "running 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 28 tests\ntest check_gate_passes_for_a_matching_fixture ... ok\ntest check_gate_fails_for_a_stale_fixture ... ok\ntest export_emits_a_valid_json_schema_contract ... ok\ntest check_json_report_is_machine_readable ... ok\ntest diff_of_identical_fixtures_exits_zero ... ok\ntest corpus_rejects_an_oversized_range ... ok\ntest check_mismatch_prints_a_path_qualified_drift_report ... ok\ntest diff_json_report_lists_paths ... ok\ntest diff_of_different_fixtures_reports_paths ... ok\ntest fields_command_lists_schema_details ... ok\ntest fields_json_is_machine_readable ... ok\ntest generate_matches_the_golden_fixture ... ok\ntest invalid_schema_exits_two_with_a_diagnosis ... ok\ntest check_accepts_the_same_seed_override_as_generate ... ok\ntest inventory_is_machine_readable ... ok\ntest edges_mode_is_reproducible_and_ignores_the_seed ... ok\ntest manifest_json_report_is_a_single_object ... ok\ntest jsonl_matches_the_golden_fixture ... ok\ntest manifest_gate_aggregates_a_stale_fixture ... ok\ntest out_writes_a_file_and_keeps_stdout_clean ... ok\ntest corpus_writes_deterministic_files ... ok\ntest manifest_gate_passes_for_all_committed_fixtures ... ok\ntest validate_accepts_a_golden_fixture ... ok\ntest stdin_schema_produces_the_same_bytes_as_a_file ... ok\ntest working_directory_does_not_change_the_bytes ... ok\ntest validate_rejects_a_stale_fixture_with_json_output ... ok\ntest demo_is_reproducible_for_the_same_seed ... ok\ntest seed_override_changes_generated_bytes ... ok\n\ntest result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.75s\n\n\nrunning 36 tests\ntest cli_parses_diff_and_manifest_commands ... ok\ntest cli_parses_corpus_command ... ok\ntest cli_parses_edges_flag ... ok\ntest corpus_machine_emits_one_write_per_file ... ok\ntest corpus_prepare_is_ordered_and_bounded ... ok\ntest drift_report_handles_csv_columns ... ok\ntest cli_parses_every_command ... ok\ntest cli_parses_export_command ... ok\ntest cli_parses_fields_command ... ok\ntest cli_parses_json_flag ... ok\ntest format_is_inferred_from_a_path ... ok\ntest generation_matches_golden_csv_bytes ... ok\ntest json_reader_preserves_key_order ... ok\ntest json_reports_have_stable_keys ... ok\ntest generation_matches_golden_json_bytes ... ok\ntest inverted_range_is_refused ... ok\ntest introspection_lists_every_field_in_order ... ok\ntest machine_refuses_an_event_in_the_wrong_phase ... ok\ntest manifest_machine_visits_every_entry_and_aggregates ... ok\ntest manifest_parses_and_validates_entries ... ok\ntest unknown_schema_version_is_refused ... ok\ntest validation_rejects_malformed_fixtures_as_errors ... ok\ntest validation_accepts_all_golden_fixtures ... ok\ntest validation_reports_out_of_range_and_missing_fields ... ok\ntest cli_parses_validate_command ... ok\ntest cli_rejects_unknown_commands_with_a_diagnosis ... ok\ntest drift_report_names_changed_paths ... ok\ntest edges_mode_is_deterministic_and_ignores_the_seed ... ok\ntest example_schema_parses_and_validates ... ok\ntest json_schema_export_maps_every_field_type ... ok\ntest machine_applies_count_and_format_overrides ... ok\ntest machine_check_mode_returns_a_nonzero_code_on_mismatch ... ok\ntest manifest_rejects_unknown_version_and_empty_entries ... ok\ntest rng_is_deterministic_for_a_seed ... ok\ntest render_metadata_reports_records_and_bytes ... ok\ntest compare_normalizes_line_endings_and_trailing_blank_lines ... ok\n\ntest result: ok. 36 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s\n     Running unittests src\\lib.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/a84a3b8e6e6a9215\\out\\kiln_core-a84a3b8e6e6a9215.exe)\n     Running unittests src\\main.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/2d4363d55f942774\\out\\kiln-2d4363d55f942774.exe)\n     Running tests\\cli.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/5703f3e2707008a2\\out\\cli-5703f3e2707008a2.exe)\n     Running tests\\core.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/51faab84502e705d\\out\\core-51faab84502e705d.exe)\n   Doc-tests kiln_core",
+          "tail": [
+            "test cli_rejects_unknown_commands_with_a_diagnosis ... ok",
+            "test drift_report_names_changed_paths ... ok",
+            "test edges_mode_is_deterministic_and_ignores_the_seed ... ok",
+            "test example_schema_parses_and_validates ... ok",
+            "test json_schema_export_maps_every_field_type ... ok",
+            "test machine_applies_count_and_format_overrides ... ok",
+            "test machine_check_mode_returns_a_nonzero_code_on_mismatch ... ok",
+            "test manifest_rejects_unknown_version_and_empty_entries ... ok",
+            "test rng_is_deterministic_for_a_seed ... ok",
+            "test render_metadata_reports_records_and_bytes ... ok",
+            "test compare_normalizes_line_endings_and_trailing_blank_lines ... ok",
+            "test result: ok. 36 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s",
+            "running 0 tests",
+            "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+            "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s",
+            "     Running unittests src\\lib.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/a84a3b8e6e6a9215\\out\\kiln_core-a84a3b8e6e6a9215.exe)",
+            "     Running unittests src\\main.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/2d4363d55f942774\\out\\kiln-2d4363d55f942774.exe)",
+            "     Running tests\\cli.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/5703f3e2707008a2\\out\\cli-5703f3e2707008a2.exe)",
+            "     Running tests\\core.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/51faab84502e705d\\out\\core-51faab84502e705d.exe)",
+            "   Doc-tests kiln_core"
+          ]
+        },
+        "gates": {
+          "passed": true,
+          "lines": [
+            "[PASS] hygiene",
+            "[PASS] guidelines",
+            "[PASS] secrets",
+            "[PASS] compat",
+            "[PASS] test",
+            "[PASS] fixtures"
+          ]
+        },
+        "delivery": {
+          "commit": "",
+          "short": "",
+          "pushed": false,
+          "push_error": null,
+          "empty": true,
+          "timestamp": "2026-11-22T11:28:36"
+        },
+        "timestamp": "2026-11-22T11:28:36",
+        "dirty_targets": []
+      },
+      "history": [
+        {
+          "run": "run-1",
+          "stage": 1,
+          "window": 3,
+          "commits": [
+            "92f8fd4d6d1363ac55e3ea085bad80db580c7030",
+            "cb88f970e71b81398ea19381b095c2b687393f8a",
+            "7675477bd0490a39a0ca2b152a2c3438bdbbd56c"
+          ],
+          "new_commits": [
+            "92f8fd4d6d1363ac55e3ea085bad80db580c7030",
+            "cb88f970e71b81398ea19381b095c2b687393f8a",
+            "7675477bd0490a39a0ca2b152a2c3438bdbbd56c"
+          ],
+          "prior_commits": [],
+          "findings": [
+            {
+              "code": "review-check-row-lost-normalization",
+              "category": "review",
+              "severity": "low",
+              "path": "README.md",
+              "line": 80,
+              "message": "The rewritten check command row drops the documented promise that CRLF and trailing blank lines are normalized before comparison. A reader of the new row could assume byte-exact line endings are required, which contradicts compare::compare_fixture behaviour and the earlier documentation.",
+              "evidence": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift |",
+              "commit": "cb88f970e71b81398ea19381b095c2b687393f8a",
+              "hunk": "cb88f970e71b:README.md#1",
+              "symbol": "",
+              "introduced": true,
+              "reproducible": false,
+              "fixable": true,
+              "interaction": "",
+              "repaired": true,
+              "source": "review",
+              "patch_old": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift |",
+              "patch_new": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift; CRLF and trailing blank lines are normalized |"
+            },
+            {
+              "code": "review-manifest-cannot-express-seed",
+              "category": "improvement",
+              "severity": "medium",
+              "path": "src/shell.rs",
+              "line": 254,
+              "message": "The new seed override is wired into check but manifest entries still pass None, so a fixture generated with generate --seed cannot be gated by kiln check --manifest. The manifest DSL has a generation mode column but no seed column; adding one would make the override usable in CI.",
+              "evidence": "run_single_check(entry.schema, entry.fixture, Some(entry.format), entry.mode, false, state.json, None) == 0,",
+              "commit": "cb88f970e71b81398ea19381b095c2b687393f8a",
+              "hunk": "cb88f970e71b:src/shell.rs#4",
+              "symbol": "",
+              "introduced": true,
+              "reproducible": false,
+              "fixable": false,
+              "interaction": "",
+              "repaired": false,
+              "source": "review",
+              "patch_old": "",
+              "patch_new": ""
+            }
+          ],
+          "repairs": [
+            {
+              "code": "review-check-row-lost-normalization",
+              "path": "README.md",
+              "line": 80,
+              "summary": "applied review suggestion: The rewritten check command row drops the documented promise that CRLF and trail",
+              "test_name": "",
+              "applied": true
+            }
+          ],
+          "counts": {
+            "review": 1,
+            "improvement": 1
+          },
+          "reviewed": 8,
+          "review": {
+            "status": "reviewed",
+            "rejected": [],
+            "files": [
+              ".aikit/decisions.md",
+              "README.md",
+              "docs/architecture-audit.md",
+              "src/cli.rs",
+              "src/main.rs",
+              "src/shell.rs",
+              "tests/cli.rs",
+              "tests/core.rs"
+            ],
+            "packet": ".aikit/reforge.reviews/stage-run-1-1-92f8fd4d6d13.md",
+            "redacted": 0,
+            "coverage": {
+              "reported": 15,
+              "total": 15,
+              "carried": [],
+              "missing": [],
+              "unknown": [],
+              "invalid": []
+            },
+            "findings": [
+              {
+                "code": "review-check-row-lost-normalization",
+                "category": "review",
+                "severity": "low",
+                "path": "README.md",
+                "line": 80,
+                "message": "The rewritten check command row drops the documented promise that CRLF and trailing blank lines are normalized before comparison. A reader of the new row could assume byte-exact line endings are required, which contradicts compare::compare_fixture behaviour and the earlier documentation.",
+                "evidence": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift |",
+                "commit": "cb88f970e71b81398ea19381b095c2b687393f8a",
+                "hunk": "cb88f970e71b:README.md#1",
+                "symbol": "",
+                "introduced": true,
+                "reproducible": false,
+                "fixable": true,
+                "interaction": "",
+                "repaired": false,
+                "source": "review",
+                "patch_old": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift |",
+                "patch_new": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift; CRLF and trailing blank lines are normalized |"
+              },
+              {
+                "code": "review-manifest-cannot-express-seed",
+                "category": "improvement",
+                "severity": "medium",
+                "path": "src/shell.rs",
+                "line": 254,
+                "message": "The new seed override is wired into check but manifest entries still pass None, so a fixture generated with generate --seed cannot be gated by kiln check --manifest. The manifest DSL has a generation mode column but no seed column; adding one would make the override usable in CI.",
+                "evidence": "run_single_check(entry.schema, entry.fixture, Some(entry.format), entry.mode, false, state.json, None) == 0,",
+                "commit": "cb88f970e71b81398ea19381b095c2b687393f8a",
+                "hunk": "cb88f970e71b:src/shell.rs#4",
+                "symbol": "",
+                "introduced": true,
+                "reproducible": false,
+                "fixable": false,
+                "interaction": "",
+                "repaired": false,
+                "source": "review",
+                "patch_old": "",
+                "patch_new": ""
+              }
+            ],
+            "attestations": []
+          },
+          "skipped": [],
+          "tests": {
+            "command": "cargo test",
+            "code": 0,
+            "passed": true,
+            "output": "running 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 28 tests\ntest check_gate_passes_for_a_matching_fixture ... ok\ntest check_gate_fails_for_a_stale_fixture ... ok\ntest export_emits_a_valid_json_schema_contract ... ok\ntest check_json_report_is_machine_readable ... ok\ntest diff_of_identical_fixtures_exits_zero ... ok\ntest corpus_rejects_an_oversized_range ... ok\ntest check_mismatch_prints_a_path_qualified_drift_report ... ok\ntest diff_json_report_lists_paths ... ok\ntest diff_of_different_fixtures_reports_paths ... ok\ntest fields_command_lists_schema_details ... ok\ntest fields_json_is_machine_readable ... ok\ntest generate_matches_the_golden_fixture ... ok\ntest invalid_schema_exits_two_with_a_diagnosis ... ok\ntest check_accepts_the_same_seed_override_as_generate ... ok\ntest inventory_is_machine_readable ... ok\ntest edges_mode_is_reproducible_and_ignores_the_seed ... ok\ntest manifest_json_report_is_a_single_object ... ok\ntest jsonl_matches_the_golden_fixture ... ok\ntest manifest_gate_aggregates_a_stale_fixture ... ok\ntest out_writes_a_file_and_keeps_stdout_clean ... ok\ntest corpus_writes_deterministic_files ... ok\ntest manifest_gate_passes_for_all_committed_fixtures ... ok\ntest validate_accepts_a_golden_fixture ... ok\ntest stdin_schema_produces_the_same_bytes_as_a_file ... ok\ntest working_directory_does_not_change_the_bytes ... ok\ntest validate_rejects_a_stale_fixture_with_json_output ... ok\ntest demo_is_reproducible_for_the_same_seed ... ok\ntest seed_override_changes_generated_bytes ... ok\n\ntest result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.75s\n\n\nrunning 36 tests\ntest cli_parses_diff_and_manifest_commands ... ok\ntest cli_parses_corpus_command ... ok\ntest cli_parses_edges_flag ... ok\ntest corpus_machine_emits_one_write_per_file ... ok\ntest corpus_prepare_is_ordered_and_bounded ... ok\ntest drift_report_handles_csv_columns ... ok\ntest cli_parses_every_command ... ok\ntest cli_parses_export_command ... ok\ntest cli_parses_fields_command ... ok\ntest cli_parses_json_flag ... ok\ntest format_is_inferred_from_a_path ... ok\ntest generation_matches_golden_csv_bytes ... ok\ntest json_reader_preserves_key_order ... ok\ntest json_reports_have_stable_keys ... ok\ntest generation_matches_golden_json_bytes ... ok\ntest inverted_range_is_refused ... ok\ntest introspection_lists_every_field_in_order ... ok\ntest machine_refuses_an_event_in_the_wrong_phase ... ok\ntest manifest_machine_visits_every_entry_and_aggregates ... ok\ntest manifest_parses_and_validates_entries ... ok\ntest unknown_schema_version_is_refused ... ok\ntest validation_rejects_malformed_fixtures_as_errors ... ok\ntest validation_accepts_all_golden_fixtures ... ok\ntest validation_reports_out_of_range_and_missing_fields ... ok\ntest cli_parses_validate_command ... ok\ntest cli_rejects_unknown_commands_with_a_diagnosis ... ok\ntest drift_report_names_changed_paths ... ok\ntest edges_mode_is_deterministic_and_ignores_the_seed ... ok\ntest example_schema_parses_and_validates ... ok\ntest json_schema_export_maps_every_field_type ... ok\ntest machine_applies_count_and_format_overrides ... ok\ntest machine_check_mode_returns_a_nonzero_code_on_mismatch ... ok\ntest manifest_rejects_unknown_version_and_empty_entries ... ok\ntest rng_is_deterministic_for_a_seed ... ok\ntest render_metadata_reports_records_and_bytes ... ok\ntest compare_normalizes_line_endings_and_trailing_blank_lines ... ok\n\ntest result: ok. 36 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s\n     Running unittests src\\lib.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/a84a3b8e6e6a9215\\out\\kiln_core-a84a3b8e6e6a9215.exe)\n     Running unittests src\\main.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/2d4363d55f942774\\out\\kiln-2d4363d55f942774.exe)\n     Running tests\\cli.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/5703f3e2707008a2\\out\\cli-5703f3e2707008a2.exe)\n     Running tests\\core.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/51faab84502e705d\\out\\core-51faab84502e705d.exe)\n   Doc-tests kiln_core",
+            "tail": [
+              "test cli_rejects_unknown_commands_with_a_diagnosis ... ok",
+              "test drift_report_names_changed_paths ... ok",
+              "test edges_mode_is_deterministic_and_ignores_the_seed ... ok",
+              "test example_schema_parses_and_validates ... ok",
+              "test json_schema_export_maps_every_field_type ... ok",
+              "test machine_applies_count_and_format_overrides ... ok",
+              "test machine_check_mode_returns_a_nonzero_code_on_mismatch ... ok",
+              "test manifest_rejects_unknown_version_and_empty_entries ... ok",
+              "test rng_is_deterministic_for_a_seed ... ok",
+              "test render_metadata_reports_records_and_bytes ... ok",
+              "test compare_normalizes_line_endings_and_trailing_blank_lines ... ok",
+              "test result: ok. 36 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s",
+              "running 0 tests",
+              "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s",
+              "     Running unittests src\\lib.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/a84a3b8e6e6a9215\\out\\kiln_core-a84a3b8e6e6a9215.exe)",
+              "     Running unittests src\\main.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/2d4363d55f942774\\out\\kiln-2d4363d55f942774.exe)",
+              "     Running tests\\cli.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/5703f3e2707008a2\\out\\cli-5703f3e2707008a2.exe)",
+              "     Running tests\\core.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/51faab84502e705d\\out\\core-51faab84502e705d.exe)",
+              "   Doc-tests kiln_core"
+            ]
+          },
+          "gates": {
+            "passed": true,
+            "lines": [
+              "[PASS] hygiene",
+              "[PASS] guidelines",
+              "[PASS] secrets",
+              "[PASS] compat",
+              "[PASS] test",
+              "[PASS] fixtures"
+            ]
+          },
+          "delivery": {
+            "commit": "",
+            "short": "",
+            "pushed": false,
+            "push_error": null,
+            "empty": true,
+            "timestamp": "2026-11-22T11:28:36"
+          },
+          "timestamp": "2026-11-22T11:28:36",
+          "dirty_targets": []
+        }
+      ],
+      "total_commits": 24
+    }
+  ],
+  "stage": 1,
+  "window": 3,
+  "audited_commits": [
+    "92f8fd4d6d1363ac55e3ea085bad80db580c7030",
+    "cb88f970e71b81398ea19381b095c2b687393f8a",
+    "7675477bd0490a39a0ca2b152a2c3438bdbbd56c"
+  ],
+  "last_audit": {
+    "run": "run-1",
+    "stage": 1,
+    "window": 3,
+    "commits": [
+      "92f8fd4d6d1363ac55e3ea085bad80db580c7030",
+      "cb88f970e71b81398ea19381b095c2b687393f8a",
+      "7675477bd0490a39a0ca2b152a2c3438bdbbd56c"
+    ],
+    "new_commits": [
+      "92f8fd4d6d1363ac55e3ea085bad80db580c7030",
+      "cb88f970e71b81398ea19381b095c2b687393f8a",
+      "7675477bd0490a39a0ca2b152a2c3438bdbbd56c"
+    ],
+    "prior_commits": [],
+    "findings": [
+      {
+        "code": "review-check-row-lost-normalization",
+        "category": "review",
+        "severity": "low",
+        "path": "README.md",
+        "line": 80,
+        "message": "The rewritten check command row drops the documented promise that CRLF and trailing blank lines are normalized before comparison. A reader of the new row could assume byte-exact line endings are required, which contradicts compare::compare_fixture behaviour and the earlier documentation.",
+        "evidence": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift |",
+        "commit": "cb88f970e71b81398ea19381b095c2b687393f8a",
+        "hunk": "cb88f970e71b:README.md#1",
+        "symbol": "",
+        "introduced": true,
+        "reproducible": false,
+        "fixable": true,
+        "interaction": "",
+        "repaired": true,
+        "source": "review",
+        "patch_old": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift |",
+        "patch_new": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift; CRLF and trailing blank lines are normalized |"
+      },
+      {
+        "code": "review-manifest-cannot-express-seed",
+        "category": "improvement",
+        "severity": "medium",
+        "path": "src/shell.rs",
+        "line": 254,
+        "message": "The new seed override is wired into check but manifest entries still pass None, so a fixture generated with generate --seed cannot be gated by kiln check --manifest. The manifest DSL has a generation mode column but no seed column; adding one would make the override usable in CI.",
+        "evidence": "run_single_check(entry.schema, entry.fixture, Some(entry.format), entry.mode, false, state.json, None) == 0,",
+        "commit": "cb88f970e71b81398ea19381b095c2b687393f8a",
+        "hunk": "cb88f970e71b:src/shell.rs#4",
+        "symbol": "",
+        "introduced": true,
+        "reproducible": false,
+        "fixable": false,
+        "interaction": "",
+        "repaired": false,
+        "source": "review",
+        "patch_old": "",
+        "patch_new": ""
+      }
+    ],
+    "repairs": [
+      {
+        "code": "review-check-row-lost-normalization",
+        "path": "README.md",
+        "line": 80,
+        "summary": "applied review suggestion: The rewritten check command row drops the documented promise that CRLF and trail",
+        "test_name": "",
+        "applied": true
+      }
+    ],
+    "counts": {
+      "review": 1,
+      "improvement": 1
+    },
+    "reviewed": 8,
+    "review": {
+      "status": "reviewed",
+      "rejected": [],
+      "files": [
+        ".aikit/decisions.md",
+        "README.md",
+        "docs/architecture-audit.md",
+        "src/cli.rs",
+        "src/main.rs",
+        "src/shell.rs",
+        "tests/cli.rs",
+        "tests/core.rs"
+      ],
+      "packet": ".aikit/reforge.reviews/stage-run-1-1-92f8fd4d6d13.md",
+      "redacted": 0,
+      "coverage": {
+        "reported": 15,
+        "total": 15,
+        "carried": [],
+        "missing": [],
+        "unknown": [],
+        "invalid": []
+      },
+      "findings": [
+        {
+          "code": "review-check-row-lost-normalization",
+          "category": "review",
+          "severity": "low",
+          "path": "README.md",
+          "line": 80,
+          "message": "The rewritten check command row drops the documented promise that CRLF and trailing blank lines are normalized before comparison. A reader of the new row could assume byte-exact line endings are required, which contradicts compare::compare_fixture behaviour and the earlier documentation.",
+          "evidence": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift |",
+          "commit": "cb88f970e71b81398ea19381b095c2b687393f8a",
+          "hunk": "cb88f970e71b:README.md#1",
+          "symbol": "",
+          "introduced": true,
+          "reproducible": false,
+          "fixable": true,
+          "interaction": "",
+          "repaired": false,
+          "source": "review",
+          "patch_old": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift |",
+          "patch_new": "| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift; CRLF and trailing blank lines are normalized |"
+        },
+        {
+          "code": "review-manifest-cannot-express-seed",
+          "category": "improvement",
+          "severity": "medium",
+          "path": "src/shell.rs",
+          "line": 254,
+          "message": "The new seed override is wired into check but manifest entries still pass None, so a fixture generated with generate --seed cannot be gated by kiln check --manifest. The manifest DSL has a generation mode column but no seed column; adding one would make the override usable in CI.",
+          "evidence": "run_single_check(entry.schema, entry.fixture, Some(entry.format), entry.mode, false, state.json, None) == 0,",
+          "commit": "cb88f970e71b81398ea19381b095c2b687393f8a",
+          "hunk": "cb88f970e71b:src/shell.rs#4",
+          "symbol": "",
+          "introduced": true,
+          "reproducible": false,
+          "fixable": false,
+          "interaction": "",
+          "repaired": false,
+          "source": "review",
+          "patch_old": "",
+          "patch_new": ""
+        }
+      ],
+      "attestations": []
+    },
+    "skipped": [],
+    "tests": {
+      "command": "cargo test",
+      "code": 0,
+      "passed": true,
+      "output": "running 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 28 tests\ntest check_gate_passes_for_a_matching_fixture ... ok\ntest check_gate_fails_for_a_stale_fixture ... ok\ntest export_emits_a_valid_json_schema_contract ... ok\ntest check_json_report_is_machine_readable ... ok\ntest diff_of_identical_fixtures_exits_zero ... ok\ntest corpus_rejects_an_oversized_range ... ok\ntest check_mismatch_prints_a_path_qualified_drift_report ... ok\ntest diff_json_report_lists_paths ... ok\ntest diff_of_different_fixtures_reports_paths ... ok\ntest fields_command_lists_schema_details ... ok\ntest fields_json_is_machine_readable ... ok\ntest generate_matches_the_golden_fixture ... ok\ntest invalid_schema_exits_two_with_a_diagnosis ... ok\ntest check_accepts_the_same_seed_override_as_generate ... ok\ntest inventory_is_machine_readable ... ok\ntest edges_mode_is_reproducible_and_ignores_the_seed ... ok\ntest manifest_json_report_is_a_single_object ... ok\ntest jsonl_matches_the_golden_fixture ... ok\ntest manifest_gate_aggregates_a_stale_fixture ... ok\ntest out_writes_a_file_and_keeps_stdout_clean ... ok\ntest corpus_writes_deterministic_files ... ok\ntest manifest_gate_passes_for_all_committed_fixtures ... ok\ntest validate_accepts_a_golden_fixture ... ok\ntest stdin_schema_produces_the_same_bytes_as_a_file ... ok\ntest working_directory_does_not_change_the_bytes ... ok\ntest validate_rejects_a_stale_fixture_with_json_output ... ok\ntest demo_is_reproducible_for_the_same_seed ... ok\ntest seed_override_changes_generated_bytes ... ok\n\ntest result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.75s\n\n\nrunning 36 tests\ntest cli_parses_diff_and_manifest_commands ... ok\ntest cli_parses_corpus_command ... ok\ntest cli_parses_edges_flag ... ok\ntest corpus_machine_emits_one_write_per_file ... ok\ntest corpus_prepare_is_ordered_and_bounded ... ok\ntest drift_report_handles_csv_columns ... ok\ntest cli_parses_every_command ... ok\ntest cli_parses_export_command ... ok\ntest cli_parses_fields_command ... ok\ntest cli_parses_json_flag ... ok\ntest format_is_inferred_from_a_path ... ok\ntest generation_matches_golden_csv_bytes ... ok\ntest json_reader_preserves_key_order ... ok\ntest json_reports_have_stable_keys ... ok\ntest generation_matches_golden_json_bytes ... ok\ntest inverted_range_is_refused ... ok\ntest introspection_lists_every_field_in_order ... ok\ntest machine_refuses_an_event_in_the_wrong_phase ... ok\ntest manifest_machine_visits_every_entry_and_aggregates ... ok\ntest manifest_parses_and_validates_entries ... ok\ntest unknown_schema_version_is_refused ... ok\ntest validation_rejects_malformed_fixtures_as_errors ... ok\ntest validation_accepts_all_golden_fixtures ... ok\ntest validation_reports_out_of_range_and_missing_fields ... ok\ntest cli_parses_validate_command ... ok\ntest cli_rejects_unknown_commands_with_a_diagnosis ... ok\ntest drift_report_names_changed_paths ... ok\ntest edges_mode_is_deterministic_and_ignores_the_seed ... ok\ntest example_schema_parses_and_validates ... ok\ntest json_schema_export_maps_every_field_type ... ok\ntest machine_applies_count_and_format_overrides ... ok\ntest machine_check_mode_returns_a_nonzero_code_on_mismatch ... ok\ntest manifest_rejects_unknown_version_and_empty_entries ... ok\ntest rng_is_deterministic_for_a_seed ... ok\ntest render_metadata_reports_records_and_bytes ... ok\ntest compare_normalizes_line_endings_and_trailing_blank_lines ... ok\n\ntest result: ok. 36 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s\n     Running unittests src\\lib.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/a84a3b8e6e6a9215\\out\\kiln_core-a84a3b8e6e6a9215.exe)\n     Running unittests src\\main.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/2d4363d55f942774\\out\\kiln-2d4363d55f942774.exe)\n     Running tests\\cli.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/5703f3e2707008a2\\out\\cli-5703f3e2707008a2.exe)\n     Running tests\\core.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/51faab84502e705d\\out\\core-51faab84502e705d.exe)\n   Doc-tests kiln_core",
+      "tail": [
+        "test cli_rejects_unknown_commands_with_a_diagnosis ... ok",
+        "test drift_report_names_changed_paths ... ok",
+        "test edges_mode_is_deterministic_and_ignores_the_seed ... ok",
+        "test example_schema_parses_and_validates ... ok",
+        "test json_schema_export_maps_every_field_type ... ok",
+        "test machine_applies_count_and_format_overrides ... ok",
+        "test machine_check_mode_returns_a_nonzero_code_on_mismatch ... ok",
+        "test manifest_rejects_unknown_version_and_empty_entries ... ok",
+        "test rng_is_deterministic_for_a_seed ... ok",
+        "test render_metadata_reports_records_and_bytes ... ok",
+        "test compare_normalizes_line_endings_and_trailing_blank_lines ... ok",
+        "test result: ok. 36 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s",
+        "running 0 tests",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s",
+        "     Running unittests src\\lib.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/a84a3b8e6e6a9215\\out\\kiln_core-a84a3b8e6e6a9215.exe)",
+        "     Running unittests src\\main.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/2d4363d55f942774\\out\\kiln-2d4363d55f942774.exe)",
+        "     Running tests\\cli.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/5703f3e2707008a2\\out\\cli-5703f3e2707008a2.exe)",
+        "     Running tests\\core.rs (target\\x86_64-pc-windows-gnu\\debug\\build\\kiln/51faab84502e705d\\out\\core-51faab84502e705d.exe)",
+        "   Doc-tests kiln_core"
+      ]
+    },
+    "gates": {
+      "passed": true,
+      "lines": [
+        "[PASS] hygiene",
+        "[PASS] guidelines",
+        "[PASS] secrets",
+        "[PASS] compat",
+        "[PASS] test",
+        "[PASS] fixtures"
+      ]
+    },
+    "delivery": {
+      "commit": "",
+      "short": "",
+      "pushed": false,
+      "push_error": null,
+      "empty": true,
+      "timestamp": "2026-11-22T11:28:36"
+    },
+    "timestamp": "2026-11-22T11:28:36",
+    "dirty_targets": []
+  },
+  "history": []
+}

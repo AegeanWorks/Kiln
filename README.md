@@ -77,7 +77,7 @@ Validation refuses an unknown schema version, an inverted or oversized range, du
 | Command | Effect |
 |---|---|
 | `kiln generate <schema> [--format json\|jsonl\|csv] [--count N] [--out FILE] [--edges] [--seed N]` | Generate and render fixtures; `--edges` emits boundary records and ignores `seed`/`count`; `--seed` overrides the schema seed. A schema path of `-` reads stdin |
-| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift |
+| `kiln check <schema> --fixture <FILE> [--seed N]` | Regenerate and compare bytes; `--seed` matches a fixture made by `generate --seed`; on mismatch print path-qualified drift; CRLF and trailing blank lines are normalized |
 | `kiln check --manifest <kiln.toml>` | Verify every declared fixture in order; exit 0 if all match, 1 if any differs, 2 on a manifest error |
 | `kiln diff <left> <right> [--format FMT]` | Structurally compare two committed fixtures without regenerating; format is inferred from the left extension |
 | `kiln corpus <schema> --seeds A..B --out-dir DIR [--format FMT]` | Write one deterministic fixture per seed (≤1000), named `<record>_<seed>.<ext>` |
