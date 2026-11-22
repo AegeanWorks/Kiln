@@ -337,6 +337,16 @@ fn fields_json_is_machine_readable() {
 }
 
 #[test]
+fn export_emits_a_valid_json_schema_contract() {
+    let output = kiln().args(["export", "examples/users.kiln"]).output().unwrap();
+    assert!(output.status.success(), "{}", stderr(&output));
+    let text = stdout(&output);
+    assert!(text.contains("draft/2020-12/schema"), "{}", text);
+    assert!(text.contains("\"title\": \"User\""), "{}", text);
+    assert!(text.contains("\"required\""), "{}", text);
+}
+
+#[test]
 fn working_directory_does_not_change_the_bytes() {
     let output = Command::new(env!("CARGO_BIN_EXE_kiln"))
         .current_dir("examples")

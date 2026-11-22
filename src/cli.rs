@@ -39,6 +39,9 @@ pub enum Command {
         schema: String,
         json: bool,
     },
+    Export {
+        schema: String,
+    },
     Demo {
         seed: i64,
     },
@@ -59,6 +62,7 @@ pub fn usage() -> String {
     out.push_str("  kiln demo --scripted [--seed N]\n");
     out.push_str("  kiln corpus <schema.kiln> --seeds A..B --out-dir DIR [--format FMT]\n");
     out.push_str("  kiln fields <schema.kiln> [--json]\n");
+    out.push_str("  kiln export <schema.kiln>          # draft-2020-12 JSON Schema\n");
     out.push_str("  kiln inventory\n");
     out.push_str("  kiln explain\n\n");
     out.push_str("Add --json to check, diff or check --manifest for a machine-readable report.\n");
@@ -193,6 +197,12 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
             let schema = schema.ok_or_else(|| error("check needs a schema path"))?;
             let fixture = fixture.ok_or_else(|| error("check needs --fixture <FILE>"))?;
             Ok(Command::Check { schema, fixture, json })
+        }
+        "export" => {
+            if rest.len() != 1 || rest[0].starts_with('-') && rest[0] != "-" {
+                return Err(error("export needs exactly one schema path"));
+            }
+            Ok(Command::Export { schema: rest[0].clone() })
         }
         "fields" => {
             let mut schema = None;

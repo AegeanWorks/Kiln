@@ -406,6 +406,26 @@ fn introspection_lists_every_field_in_order() {
 }
 
 #[test]
+fn json_schema_export_maps_every_field_type() {
+    let text = kiln_core::jsonschema::render(&example_schema());
+    assert!(text.contains("\"$schema\": \"https://json-schema.org/draft/2020-12/schema\""));
+    assert!(text.contains("\"title\": \"User\""));
+    assert!(text.contains("\"id\": {\"type\":\"integer\",\"minimum\":1,\"maximum\":9999}"));
+    assert!(text.contains("\"score\": {\"type\":\"number\",\"minimum\":0.00,\"maximum\":100.00}"));
+    assert!(text.contains("\"enum\":[\"Alice\",\"Bob\",\"Cara\",\"Deniz\"]"));
+    assert!(text.contains("\"type\":\"array\""));
+    assert!(text.contains("\"additionalProperties\": false"));
+    let parsed = kiln_core::json::parse(&text).expect("export must be valid JSON");
+    assert!(matches!(parsed, kiln_core::json::Json::Object(_)));
+}
+
+#[test]
+fn cli_parses_export_command() {
+    let args = vec!["export".to_string(), "s.kiln".to_string()];
+    assert_eq!(cli::parse(&args).unwrap(), Command::Export { schema: "s.kiln".to_string() });
+}
+
+#[test]
 fn cli_parses_fields_command() {
     let args = vec!["fields".to_string(), "s.kiln".to_string(), "--json".to_string()];
     assert_eq!(cli::parse(&args).unwrap(), Command::Fields { schema: "s.kiln".to_string(), json: true });

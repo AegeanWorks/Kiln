@@ -320,6 +320,25 @@ pub fn run_corpus(path: String, start: u64, end: u64, format: Option<Format>, ou
     code
 }
 
+/// `export` command: emit a standard JSON Schema contract for a schema.
+pub fn run_export(path: String) -> i32 {
+    let parsed = read_text(&path).and_then(|text| {
+        let schema = schema::parse(&text).map_err(|error| parse_failure(&error))?;
+        schema::validate(&schema).map_err(|error| parse_failure(&error))?;
+        Ok(schema)
+    });
+    match parsed {
+        Ok(schema) => {
+            print_out(&kiln_core::jsonschema::render(&schema));
+            0
+        }
+        Err(message) => {
+            print_err(&message);
+            2
+        }
+    }
+}
+
 /// `fields` command: describe a schema without generating any data.
 pub fn run_fields(path: String, json: bool) -> i32 {
     let parsed = read_text(&path).and_then(|text| {
@@ -387,6 +406,7 @@ pub fn inventory() -> i32 {
     println!("cli|diff|kiln diff <left> <right> [--format FMT]");
     println!("cli|corpus|kiln corpus <schema> --seeds A..B --out-dir DIR");
     println!("cli|fields|kiln fields <schema.kiln> [--json]");
+    println!("cli|export|kiln export <schema.kiln>");
     println!("cli|demo|--scripted [--seed N]");
     println!("handler|run|kiln-run");
     0
@@ -407,5 +427,6 @@ pub fn explain() -> i32 {
     println!("Manifest lines: version = 1, then 'fixture = <schema>, <fixture>, <format>' per entry");
     println!("Corpus: kiln corpus <schema> --seeds A..B --out-dir DIR writes one fixture per seed");
     println!("Fields: kiln fields <schema> [--json] lists field names, types, details and bounds");
+    println!("Export: kiln export <schema> emits a draft-2020-12 JSON Schema contract");
     0
 }

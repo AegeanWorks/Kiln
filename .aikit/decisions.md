@@ -102,3 +102,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: Documentation and CI need the declared field types and bounds without parsing a .kiln file themselves
 - **Decision**: kiln fields reads and validates a schema, then renders a stable text table or JSON array from a pure introspection module
 - **Consequences**: A one-shot pure command; no extra state machine is warranted
+
+### ADR-014: Export schemas as JSON Schema
+- **Date**: 2026-11-22
+- **Status**: Accepted
+- **Context**: Programmers need the fixture contract in a standard format for editors and validators
+- **Decision**: Add kiln export <schema> that renders a draft-2020-12 JSON Schema from the validated schema in the pure core
+- **Consequences**: Another one-shot pure command; the DSL gains interoperability without adding a dependency

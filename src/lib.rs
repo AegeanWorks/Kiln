@@ -11,6 +11,7 @@ pub mod corpus;
 pub mod drift;
 pub mod generate;
 pub mod introspect;
+pub mod jsonschema;
 pub mod json;
 pub mod machine;
 pub mod manifest;

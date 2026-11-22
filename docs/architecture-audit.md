@@ -6,7 +6,7 @@ from the project root.
 
 ## Constraint 1 — Functional Core
 
-`src/lib.rs` exports fourteen modules; all are pure transformations of data:
+`src/lib.rs` exports fifteen modules; all are pure transformations of data:
 
 | Module | Input → output | Effect-free claim |
 |---|---|---|
@@ -22,6 +22,7 @@ from the project root.
 | `report.rs` | verdicts/changes → JSON text | stable key order, no serialization dependency |
 | `corpus.rs` | schema + seed range → prepared files; `CorpusRun` + event → actions | bounded preparation and a third explicit machine |
 | `introspect.rs` | `&Schema` → field descriptors → text/JSON | one-shot, no state to model |
+| `jsonschema.rs` | `&Schema` → draft-2020-12 JSON Schema | one-shot, types and bounds mapped deterministically |
 | `machine.rs` | `&mut RunState` + `Event` → `Vec<Action>` | returns commands; executes none |
 | `cli.rs` | `&[String]` → `Result<Command, String>` | no `std::env` read |
 
@@ -31,7 +32,7 @@ Evidence command:
 grep -rn "std::fs|std::env|println!|eprintln!|print!|SystemTime|Instant|process::exit|ExitCode|fs::" src
 ```
 
-Result: 36 matches, **all in `src/main.rs` and `src/shell.rs`**; zero matches in the fourteen core
+Result: 38 matches, **all in `src/main.rs` and `src/shell.rs`**; zero matches in the fifteen core
 modules. The core cannot read a file, read argv, write output or exit a process.
 
 ## Constraint 2 — Imperative Shell / I/O at the Edges
@@ -42,7 +43,7 @@ The shell is deliberately small:
   shell's integer result to `ExitCode` at line 29. It performs no analysis.
 - `src/shell.rs` owns every side effect: `print!`/`eprintln!` (lines 16, 21), `fs::read_to_string`
   (line 34), `fs::write` (lines 43, 60), `fs::create_dir_all` (line 53), and the human/report output
-  (lines 369–409). Each I/O failure is
+  (lines 388–430). Each I/O failure is
   diagnosed with `Why:` and `Fix:`.
 
 The shell/core boundary is two frozen DTOs: schema text enters through `Event::Loaded`, and a
@@ -94,7 +95,7 @@ shell never decides which file comes next.
 ## Determinism evidence
 
 ```
-cargo test                     # 54 tests pass
+cargo test                     # 57 tests pass
 cargo run --quiet --bin kiln -- generate examples/users.kiln   # byte-identical on repeat runs
 cargo run --quiet --bin kiln -- check examples/users.kiln --fixture examples/users.json
 → fixture MATCH ... verdict: PASS (exit 0)
