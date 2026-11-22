@@ -171,6 +171,53 @@ fn check_mismatch_prints_a_path_qualified_drift_report() {
 }
 
 #[test]
+fn diff_of_identical_fixtures_exits_zero() {
+    let output = kiln()
+        .args(["diff", "examples/users.json", "examples/users.json"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(0));
+    assert!(stdout(&output).contains("MATCH"));
+}
+
+#[test]
+fn diff_of_different_fixtures_reports_paths() {
+    let output = kiln()
+        .args(["diff", "examples/users.json", "examples/users-edges.json"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    assert!(stdout(&output).contains("fixture drift"));
+    assert!(stdout(&output).contains("$.rows[0].id"));
+}
+
+#[test]
+fn manifest_gate_passes_for_all_committed_fixtures() {
+    let output = kiln()
+        .args(["check", "--manifest", "examples/kiln.toml"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert!(stdout(&output).contains("3/3 fixtures matched"), "{}", stdout(&output));
+}
+
+#[test]
+fn manifest_gate_aggregates_a_stale_fixture() {
+    let stale = write_temp("manifest-stale", "json", "{\"count\": 1}\n");
+    let manifest_path = temp_path("manifest", "toml");
+    let text = format!(
+        "version = 1\nfixture = examples/users.kiln, examples/users.json, json\nfixture = examples/users.kiln, {}, json\n",
+        stale.to_string_lossy()
+    );
+    fs::write(&manifest_path, text).unwrap();
+    let output = kiln().arg("check").arg("--manifest").arg(&manifest_path).output().unwrap();
+    cleanup(&stale);
+    cleanup(&manifest_path);
+    assert_eq!(output.status.code(), Some(1), "{}", stdout(&output));
+    assert!(stdout(&output).contains("2/2 fixtures matched") || stdout(&output).contains("1/2"), "{}", stdout(&output));
+}
+
+#[test]
 fn working_directory_does_not_change_the_bytes() {
     let output = Command::new(env!("CARGO_BIN_EXE_kiln"))
         .current_dir("examples")

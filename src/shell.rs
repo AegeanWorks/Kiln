@@ -5,6 +5,7 @@ use std::collections::VecDeque;
 use std::fs;
 
 use kiln_core::machine::{self, Action, Event, RunState};
+use kiln_core::manifest::{self, ManifestAction, ManifestEvent, ManifestRun};
 use kiln_core::model::{Format, GenerationMode, Verdict};
 use kiln_core::{compare, drift, generate, render, schema};
 
@@ -120,23 +121,111 @@ pub fn run_generate(
     })
 }
 
-/// `check` command: read the committed fixture at the edge, then compare.
-pub fn run_check(path: String, fixture: String) -> i32 {
+/// One fixture check. The format override is used by manifest entries, which
+/// declare their own format rather than inheriting it from the schema.
+fn run_single_check(path: String, fixture: String, format: Option<Format>, mode: GenerationMode) -> i32 {
     match read_text(&fixture) {
         Ok(text) => run_machine(Event::Start {
             path,
-            format: None,
+            format,
             count: None,
             out: None,
             fixture_text: text,
             check: true,
-            mode: GenerationMode::Seeded,
+            mode,
         }),
         Err(message) => {
             print_err(&message);
             2
         }
     }
+}
+
+/// `check` command: read the committed fixture at the edge, then compare.
+pub fn run_check(path: String, fixture: String) -> i32 {
+    run_single_check(path, fixture, None, GenerationMode::Seeded)
+}
+
+/// `diff` command: compare two committed fixtures without regenerating.
+pub fn run_diff(left: String, right: String, format: Option<Format>) -> i32 {
+    let chosen = match format {
+        Some(value) => value,
+        None => match Format::from_path(&left) {
+            Ok(value) => value,
+            Err(message) => {
+                print_err(&format!("{}\nWhy: drift needs a format to parse the fixture.\nFix: pass --format json|jsonl|csv.", message));
+                return 2;
+            }
+        },
+    };
+    let first = match read_text(&left) {
+        Ok(text) => text,
+        Err(message) => {
+            print_err(&message);
+            return 2;
+        }
+    };
+    let second = match read_text(&right) {
+        Ok(text) => text,
+        Err(message) => {
+            print_err(&message);
+            return 2;
+        }
+    };
+    let verdict = compare::compare_fixture(&first, &second);
+    if verdict == Verdict::Pass {
+        print_out("fixtures MATCH: byte-identical after normalization\n");
+        0
+    } else {
+        print_out(&drift::drift_report(&first, &second, chosen));
+        print_out("fixtures DIFFER\n");
+        1
+    }
+}
+
+/// `check --manifest` command: an explicit machine walks every declared entry.
+pub fn run_manifest(path: String) -> i32 {
+    let mut state = ManifestRun::new();
+    let mut queue: VecDeque<ManifestEvent> = VecDeque::new();
+    queue.push_back(ManifestEvent::Start { path });
+    let mut code = 0;
+    while let Some(event) = queue.pop_front() {
+        for action in manifest::transition(&mut state, event) {
+            match action {
+                ManifestAction::Read { path } => match read_text(&path) {
+                    Ok(text) => queue.push_back(ManifestEvent::Loaded { text }),
+                    Err(message) => queue.push_back(ManifestEvent::Failed { message }),
+                },
+                ManifestAction::Parse { text } => match manifest::parse(&text)
+                    .and_then(|parsed| {
+                        manifest::validate(&parsed)?;
+                        Ok(parsed)
+                    }) {
+                    Ok(parsed) => queue.push_back(ManifestEvent::Parsed { manifest: parsed }),
+                    Err(error) => queue.push_back(ManifestEvent::Failed {
+                        message: format!(
+                            "cannot use manifest: {}\nWhy: a version-1 manifest with at least one fixture is required.\nFix: each fixture line is 'schema, fixture, format'.",
+                            error
+                        ),
+                    }),
+                },
+                ManifestAction::RunEntry { entry } => {
+                    let verdict = Verdict::from_equal(
+                        run_single_check(entry.schema, entry.fixture, Some(entry.format), entry.mode) == 0,
+                    );
+                    queue.push_back(ManifestEvent::EntryDone { verdict });
+                }
+                ManifestAction::Print { text } => print_out(&text),
+                ManifestAction::Error { message } => print_err(&message),
+                ManifestAction::Exit { code: requested } => {
+                    code = requested;
+                    queue.clear();
+                    break;
+                }
+            }
+        }
+    }
+    code
 }
 
 fn demo_schema(seed: i64) -> String {
@@ -177,6 +266,8 @@ pub fn demo(seed: i64) -> i32 {
 pub fn inventory() -> i32 {
     println!("cli|generate|kiln generate <schema.kiln> [--edges]");
     println!("cli|check|kiln check <schema.kiln> --fixture <file>");
+    println!("cli|manifest|kiln check --manifest <kiln.toml>");
+    println!("cli|diff|kiln diff <left> <right> [--format FMT]");
     println!("cli|demo|--scripted [--seed N]");
     println!("handler|run|kiln-run");
     0
@@ -193,5 +284,7 @@ pub fn explain() -> i32 {
     println!("Schema keys: version, seed, count, format (json|jsonl|csv), record Name {{ field: type }}");
     println!("Field types: int(a..b), float(a..b) in hundredths, bool, enum(a,b), string(\"pre\",a..b), list(type,a..b)");
     println!("Drift: kiln check prints path-qualified changes when a committed fixture no longer matches");
+    println!("Review: kiln diff compares two committed fixtures; kiln check --manifest gates them all");
+    println!("Manifest lines: version = 1, then 'fixture = <schema>, <fixture>, <format>' per entry");
     0
 }

@@ -34,6 +34,8 @@ kiln generate examples/users.kiln --format jsonl  # one JSON object per line
 kiln generate examples/users.kiln --edges         # min/max boundary records
 kiln generate examples/users.kiln --out users.json
 kiln check examples/users.kiln --fixture users.json   # exit 0 on match, 1 on drift
+kiln check --manifest examples/kiln.toml          # gate every committed fixture at once
+kiln diff examples/users.json examples/users-edges.json  # structural review of two fixtures
 kiln explain                                     # schema grammar and architecture
 ```
 
@@ -76,6 +78,8 @@ Validation refuses an unknown schema version, an inverted or oversized range, du
 |---|---|
 | `kiln generate <schema> [--format json\|jsonl\|csv] [--count N] [--out FILE] [--edges]` | Generate and render fixtures; `--edges` emits boundary records and ignores `seed`/`count` |
 | `kiln check <schema> --fixture <FILE>` | Regenerate and compare bytes; on mismatch print path-qualified drift; CRLF and trailing blank lines are normalized |
+| `kiln check --manifest <kiln.toml>` | Verify every declared fixture in order; exit 0 if all match, 1 if any differs, 2 on a manifest error |
+| `kiln diff <left> <right> [--format FMT]` | Structurally compare two committed fixtures without regenerating; format is inferred from the left extension |
 | `kiln demo --scripted [--seed N]` | Headless WORLD-DELTA drive used by AIKit's compat gate |
 | `kiln inventory` | `kind\|name\|locator` lines describing the command surface |
 | `kiln explain` | Architecture and schema reference |
@@ -87,6 +91,25 @@ Exit codes: `0` success or fixture match, `1` fixture mismatch, `2` argument, sc
 `--edges` switches from seeded random records to deterministic boundary records: one all-minimum row, one all-maximum row, then one row per field where only that field is raised to its maximum. It is independent of `seed` and `count`, so the same schema always produces the same edge suite.
 
 `kiln check` still decides match by bytes, but a mismatch now prints a bounded, path-qualified report: for JSON/JSONL, changes are located as `$.rows[0].id` or `lines[2]`; for CSV, as `rows[0].id`. Added fields get `+`, removed fields `-`, changed values `~`. The report is produced by a pure order-preserving reader and differ in the core, so it cannot change the verdict.
+
+## Manifest and review workflow
+
+A `kiln.toml` manifest lets one CI command gate the whole fixture set:
+
+```text
+version = 1
+fixture = examples/users.kiln, examples/users.json, json
+fixture = examples/users.kiln, examples/users.jsonl, jsonl
+fixture = examples/users.kiln, examples/users-edges.json, json, edges
+```
+
+The optional fourth value selects `seeded` (default) or `edges` generation. The manifest is versioned;
+an unknown version is refused without changing the file. Its own state machine walks entries in
+declared order and prints an aggregate `3/3 fixtures matched` summary.
+
+`kiln diff` reuses the same pure differ on two committed fixtures, so a reviewer can see what a
+fixture change means without running the generator. It infers the format from the left file's
+extension unless `--format` is given.
 
 ## Determinism contract
 
@@ -101,7 +124,7 @@ Changing the generator is a deliberate golden update, which is the review this k
 
 | Constraint | Implementation |
 |---|---|
-| Functional Core | `src/schema.rs`, `rng.rs`, `generate.rs`, `render.rs`, `compare.rs`, `json.rs`, `drift.rs`, `machine.rs`, `cli.rs` and `model.rs` are pure: data in, data out. They contain no `std::fs`, `std::env`, clock, OS randomness or process exit. |
+| Functional Core | `src/schema.rs`, `rng.rs`, `generate.rs`, `render.rs`, `compare.rs`, `json.rs`, `drift.rs`, `manifest.rs`, `machine.rs`, `cli.rs` and `model.rs` are pure: data in, data out. They contain no `std::fs`, `std::env`, clock, OS randomness or process exit. |
 | Imperative Shell | `src/shell.rs` owns every file read/write and every print. `src/main.rs` reads argv and converts the shell's integer code to `ExitCode`. |
 | I/O at the Edges | The boundary is two frozen DTOs: schema text enters, a `Rendered` value leaves. Side effects are represented as `Action` values emitted by the pure machine and executed only in the shell. |
 | Explicit State Machines | `GenerateState` moves through `Idle → Loading → Parsing → Validating → Generating → Rendering → Done`, with `Comparing` for the fixture gate and `Failed` for any diagnosed error. Each event has one transition; an event in the wrong phase yields an error action, never a silent no-op. |
@@ -126,7 +149,7 @@ kiln/
 ├── src/                      <- pure core plus thin executable edges
 │   ├── main.rs               <- executable edge: argv in, ExitCode out
 │   ├── shell.rs              <- imperative shell: all fs and stdout/stderr I/O
-│   ├── lib.rs                <- exports the ten pure core modules
+│   ├── lib.rs                <- exports the eleven pure core modules
 │   ├── model.rs              <- frozen data types and generation mode
 │   ├── schema.rs             <- versioned schema reader and validator
 │   ├── rng.rs                <- fixed xorshift64 stream
@@ -135,6 +158,7 @@ kiln/
 │   ├── compare.rs            <- fixture byte comparison
 │   ├── json.rs               <- order-preserving JSON reader for drift
 │   ├── drift.rs              <- path-qualified structural drift report
+│   ├── manifest.rs           <- versioned manifest and its run state machine
 │   ├── machine.rs            <- explicit generation state machine
 │   └── cli.rs                <- pure argument parser
 ├── tests/
@@ -144,16 +168,18 @@ kiln/
 │   ├── manual.html           <- self-contained local command reference
 │   └── architecture-audit.md <- FC / shell / edges / state-machine audit evidence
 ├── examples/
+│   ├── kiln.toml             <- example multi-fixture manifest
 │   ├── users.kiln            <- example schema
 │   ├── users.json            <- golden JSON fixture
 │   ├── users.jsonl           <- golden JSONL fixture
+│   ├── users-edges.json      <- golden boundary-value fixture
 │   └── users.csv             <- golden CSV fixture
 └── .aikit/                   <- this project's memory: record, ledger, decisions
 ```
 
 ## Verification
 
-`cargo test` runs 29 tests: 18 pure-core tests and 11 binary integration tests. The AIKit Phase 4 gate additionally runs hygiene, guidelines, secret, compat and test checks; `python aikit.py check kiln --all-gates` is the canonical full report.
+`cargo test` runs 38 tests: 23 pure-core tests and 15 binary integration tests. The AIKit Phase 4 gate additionally runs hygiene, guidelines, secret, compat and test checks; `python aikit.py check kiln --all-gates` is the canonical full report.
 
 ## 📜 License
 

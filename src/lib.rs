@@ -11,6 +11,7 @@ pub mod drift;
 pub mod generate;
 pub mod json;
 pub mod machine;
+pub mod manifest;
 pub mod model;
 pub mod render;
 pub mod rng;

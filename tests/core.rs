@@ -5,6 +5,7 @@ use kiln_core::compare::compare_fixture;
 use kiln_core::drift::drift_report;
 use kiln_core::generate::{generate, generate_edges};
 use kiln_core::machine::{self, Action, Event, Phase, RunState};
+use kiln_core::manifest::{self, ManifestEvent, ManifestRun};
 use kiln_core::model::{Format, GenerationMode, Verdict};
 use kiln_core::render::{render, render_csv, render_json};
 use kiln_core::rng::Rng;
@@ -223,6 +224,76 @@ fn drift_report_handles_csv_columns() {
     let actual = "id,name\n2,Bob\n";
     let report = drift_report(expected, actual, Format::Csv);
     assert!(report.contains("rows[0].id"), "{}", report);
+}
+
+const EXAMPLE_MANIFEST: &str = include_str!("../examples/kiln.toml");
+
+#[test]
+fn manifest_parses_and_validates_entries() {
+    let parsed = manifest::parse(EXAMPLE_MANIFEST).unwrap();
+    manifest::validate(&parsed).unwrap();
+    assert_eq!(parsed.version, 1);
+    assert_eq!(parsed.entries.len(), 3);
+    assert_eq!(parsed.entries[0].format, Format::Json);
+    assert_eq!(parsed.entries[2].mode, GenerationMode::Edges);
+}
+
+#[test]
+fn manifest_rejects_unknown_version_and_empty_entries() {
+    let wrong = manifest::parse("version = 2\nfixture = a.kiln, a.json, json\n").unwrap();
+    assert!(manifest::validate(&wrong).is_err());
+    let empty = manifest::parse("version = 1\n").unwrap();
+    assert!(manifest::validate(&empty).is_err());
+}
+
+#[test]
+fn format_is_inferred_from_a_path() {
+    assert_eq!(Format::from_path("a.JSON").unwrap(), Format::Json);
+    assert_eq!(Format::from_path("a.jsonl").unwrap(), Format::Jsonl);
+    assert_eq!(Format::from_path("a.csv").unwrap(), Format::Csv);
+    assert!(Format::from_path("a.txt").is_err());
+}
+
+#[test]
+fn manifest_machine_visits_every_entry_and_aggregates() {
+    let parsed = manifest::parse(EXAMPLE_MANIFEST).unwrap();
+    let mut state = ManifestRun::new();
+    let actions = manifest::transition(&mut state, ManifestEvent::Start {
+        path: "unused".to_string(),
+    });
+    assert!(matches!(actions[0], manifest::ManifestAction::Read { .. }));
+    manifest::transition(&mut state, ManifestEvent::Loaded { text: EXAMPLE_MANIFEST.to_string() });
+    let actions = manifest::transition(&mut state, ManifestEvent::Parsed { manifest: parsed.clone() });
+    assert!(matches!(actions[0], manifest::ManifestAction::RunEntry { .. }));
+
+    for expected in [Verdict::Pass, Verdict::Pass, Verdict::Fail] {
+        let actions = manifest::transition(&mut state, ManifestEvent::EntryDone { verdict: expected });
+        if expected == Verdict::Fail {
+            assert!(actions.iter().any(|action| matches!(action, manifest::ManifestAction::Exit { code: 1 })));
+            assert_eq!(state.verdicts.len(), 3);
+        } else {
+            assert!(actions.iter().any(|action| matches!(action, manifest::ManifestAction::RunEntry { .. })));
+        }
+    }
+    assert_eq!(state.phase, manifest::ManifestPhase::Done);
+}
+
+#[test]
+fn cli_parses_diff_and_manifest_commands() {
+    let diff = vec![
+        "diff".to_string(), "a.json".to_string(), "b.json".to_string(),
+        "--format".to_string(), "csv".to_string(),
+    ];
+    assert_eq!(
+        cli::parse(&diff).unwrap(),
+        Command::Diff {
+            left: "a.json".to_string(),
+            right: "b.json".to_string(),
+            format: Some(Format::Csv),
+        }
+    );
+    let manifest = vec!["check".to_string(), "--manifest".to_string(), "kiln.toml".to_string()];
+    assert_eq!(cli::parse(&manifest).unwrap(), Command::Manifest { path: "kiln.toml".to_string() });
 }
 
 #[test]

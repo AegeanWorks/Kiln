@@ -1,0 +1,6 @@
+# Kiln manifest: one gate for every committed fixture.
+# Each line: fixture = <schema>, <fixture>, <format>[, seeded|edges]
+version = 1
+fixture = examples/users.kiln, examples/users.json, json
+fixture = examples/users.kiln, examples/users.jsonl, jsonl
+fixture = examples/users.kiln, examples/users-edges.json, json, edges

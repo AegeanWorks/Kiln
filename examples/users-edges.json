@@ -1,0 +1,71 @@
+{
+  "record": "User",
+  "count": 8,
+  "fields": ["id", "name", "active", "score", "handle", "tags"],
+  "rows": [
+    {
+      "id": 1,
+      "name": "Alice",
+      "active": false,
+      "score": 0.00,
+      "handle": "u_aaa",
+      "tags": []
+    },
+    {
+      "id": 9999,
+      "name": "Deniz",
+      "active": true,
+      "score": 100.00,
+      "handle": "u_zzzzzz",
+      "tags": ["blue", "blue", "blue"]
+    },
+    {
+      "id": 9999,
+      "name": "Alice",
+      "active": false,
+      "score": 0.00,
+      "handle": "u_aaa",
+      "tags": []
+    },
+    {
+      "id": 1,
+      "name": "Deniz",
+      "active": false,
+      "score": 0.00,
+      "handle": "u_aaa",
+      "tags": []
+    },
+    {
+      "id": 1,
+      "name": "Alice",
+      "active": true,
+      "score": 0.00,
+      "handle": "u_aaa",
+      "tags": []
+    },
+    {
+      "id": 1,
+      "name": "Alice",
+      "active": false,
+      "score": 100.00,
+      "handle": "u_aaa",
+      "tags": []
+    },
+    {
+      "id": 1,
+      "name": "Alice",
+      "active": false,
+      "score": 0.00,
+      "handle": "u_zzzzzz",
+      "tags": []
+    },
+    {
+      "id": 1,
+      "name": "Alice",
+      "active": false,
+      "score": 0.00,
+      "handle": "u_aaa",
+      "tags": ["blue", "blue", "blue"]
+    }
+  ]
+}

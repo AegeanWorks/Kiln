@@ -60,3 +60,17 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: Streaming test pipelines and log-style fixtures want one JSON object per line
 - **Decision**: Add Format::Jsonl with a pure line-oriented renderer that preserves declaration-order fields
 - **Consequences**: Schema format key, CLI flag, docs and golden fixtures are extended together
+
+### ADR-008: Add a structural diff command for committed fixtures
+- **Date**: 2026-11-22
+- **Status**: Accepted
+- **Context**: Reviewers need to compare two fixture revisions without regenerating or running the generator
+- **Decision**: kiln diff reads two fixture files, infers format from extension unless overridden, and prints the existing pure drift report with exit 0 for identical bytes and 1 for differences
+- **Consequences**: The drift differ becomes reusable outside check; no new state machine is needed for a one-shot transformation
+
+### ADR-009: Gate multiple fixtures with a versioned manifest and an explicit machine
+- **Date**: 2026-11-22
+- **Status**: Accepted
+- **Context**: Projects keep several schema/fixture pairs, and a CI gate must cover all of them deterministically
+- **Decision**: A kiln.toml manifest lists fixture entries; ManifestRun moves Idle > Reading > Parsing > Running(index) > Done with Failed on any error, and delegates each entry to the existing single-fixture machine
+- **Consequences**: Aggregate verdict is explicit and ordered; a new parser and a second state machine are added to the pure core

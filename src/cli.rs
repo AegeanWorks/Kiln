@@ -16,6 +16,14 @@ pub enum Command {
         schema: String,
         fixture: String,
     },
+    Diff {
+        left: String,
+        right: String,
+        format: Option<Format>,
+    },
+    Manifest {
+        path: String,
+    },
     Demo {
         seed: i64,
     },
@@ -30,6 +38,8 @@ pub fn usage() -> String {
     out.push_str("Usage:\n");
     out.push_str("  kiln generate <schema.kiln> [--format json|jsonl|csv] [--count N] [--out FILE] [--edges]\n");
     out.push_str("  kiln check <schema.kiln> --fixture <FILE>\n");
+    out.push_str("  kiln check --manifest kiln.toml\n");
+    out.push_str("  kiln diff <left> <right> [--format json|jsonl|csv]\n");
     out.push_str("  kiln demo --scripted [--seed N]\n");
     out.push_str("  kiln inventory\n");
     out.push_str("  kiln explain\n\n");
@@ -89,6 +99,34 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
             }
             let schema = schema.ok_or_else(|| error("generate needs a schema path"))?;
             Ok(Command::Generate { schema, format, count, out, edges })
+        }
+        "check" if rest.first().map(|value| value.as_str()) == Some("--manifest") => {
+            let path = take_value(rest, &mut 0usize, "--manifest")?;
+            Ok(Command::Manifest { path })
+        }
+        "diff" => {
+            let mut paths = Vec::new();
+            let mut format = None;
+            let mut i = 0;
+            while i < rest.len() {
+                match rest[i].as_str() {
+                    "--format" => {
+                        let value = take_value(rest, &mut i, "--format")?;
+                        format = Some(Format::parse(&value).map_err(|message| error(&message))?);
+                    }
+                    other if other.starts_with('-') => return Err(error(&format!("unknown flag '{}'", other))),
+                    other => paths.push(other.to_string()),
+                }
+                i += 1;
+            }
+            if paths.len() != 2 {
+                return Err(error("diff needs exactly two fixture paths"));
+            }
+            Ok(Command::Diff {
+                left: paths.remove(0),
+                right: paths.remove(0),
+                format,
+            })
         }
         "check" => {
             let mut schema: Option<String> = None;

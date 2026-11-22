@@ -25,6 +25,21 @@ impl Format {
             other => Err(format!("unknown format '{}'; expected json, jsonl or csv", other)),
         }
     }
+
+    /// Infer a format from a file extension. Unknown extensions are an error,
+    /// never a silent default: a wrong format would make drift unreadable.
+    pub fn from_path(path: &str) -> Result<Self, String> {
+        let lower = path.to_ascii_lowercase();
+        if lower.ends_with(".json") {
+            Ok(Format::Json)
+        } else if lower.ends_with(".jsonl") {
+            Ok(Format::Jsonl)
+        } else if lower.ends_with(".csv") {
+            Ok(Format::Csv)
+        } else {
+            Err(format!("cannot infer format from '{}'; pass --format", path))
+        }
+    }
 }
 
 /// Which deterministic generator supplies the records.

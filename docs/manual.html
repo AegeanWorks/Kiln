@@ -31,6 +31,8 @@ record User {
 <ul>
 <li><code>kiln generate &lt;schema&gt; [--format json|jsonl|csv] [--count N] [--out FILE] [--edges]</code></li>
 <li><code>kiln check &lt;schema&gt; --fixture &lt;FILE&gt;</code></li>
+<li><code>kiln check --manifest kiln.toml</code></li>
+<li><code>kiln diff &lt;left&gt; &lt;right&gt; [--format FMT]</code></li>
 <li><code>kiln demo --scripted [--seed N]</code></li>
 <li><code>kiln inventory</code></li>
 <li><code>kiln explain</code></li>
@@ -38,6 +40,9 @@ record User {
 <h2>Boundaries and drift</h2>
 <p><code>--edges</code> replaces seeded records with boundary records: one all-minimum row, one all-maximum row, then one row per field where only that field is raised to its maximum. It does not use the seed or count, so the boundary suite never changes.</p>
 <p><code>kiln check</code> compares bytes, but a mismatch also prints a bounded, path-qualified report. JSON and JSONL changes are located as <code>$.rows[0].id</code> or <code>lines[2]</code>; CSV changes as <code>rows[0].id</code>. Added, removed and changed values are marked with <code>+</code>, <code>-</code> and <code>~</code>. The report is computed in the pure core and never alters the verdict.</p>
+<h2>Manifest and review</h2>
+<p>A <code>kiln.toml</code> manifest gates every committed fixture in one command. It starts with <code>version = 1</code>, then one line per fixture: <code>fixture = schema, fixture, format[, seeded|edges]</code>. Entries run in declared order and the summary reports how many matched. The optional mode selects boundary generation instead of the seeded stream.</p>
+<p><code>kiln diff</code> compares two committed fixtures with the same structural differ used by <code>check</code>, so a review can see paths and values without regenerating anything. The format is inferred from the left file extension unless <code>--format</code> is supplied.</p>
 <h2>Architecture</h2>
 <p>The core is pure: schema reading, the seeded stream, generation, rendering, comparison, argument parsing and the state machine perform no I/O. The shell performs every file read, file write and print. The boundary is two data types: schema text enters, rendered bytes leave. Side effects are represented as actions emitted by the state machine and executed only at the edge.</p>
 <h2>Determinism</h2>
