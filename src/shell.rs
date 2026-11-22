@@ -212,7 +212,15 @@ pub fn run_diff(left: String, right: String, format: Option<Format>, json: bool)
     };
     let verdict = compare::compare_fixture(&first, &second);
     if json {
-        let found = drift::changes(&first, &second, chosen).unwrap_or_default();
+        let found = match drift::changes(&first, &second, chosen) {
+            Ok(value) => value,
+            Err(error) => vec![kiln_core::drift::Change {
+                path: "$".to_string(),
+                kind: kiln_core::drift::ChangeKind::Changed,
+                expected: "parseable fixture".to_string(),
+                actual: error,
+            }],
+        };
         print_out(&report::render_diff(verdict, &found));
     } else if verdict == Verdict::Pass {
         print_out("fixtures MATCH: byte-identical after normalization\n");

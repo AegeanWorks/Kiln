@@ -388,6 +388,22 @@ fn check_accepts_the_same_seed_override_as_generate() {
 }
 
 #[test]
+fn diff_json_reports_unparseable_fixture_reason() {
+    let fixture = write_temp("unparseable", "json", "{not json\n");
+    let output = kiln()
+        .args(["diff", "examples/users.json"])
+        .arg(&fixture)
+        .arg("--json")
+        .output()
+        .unwrap();
+    cleanup(&fixture);
+    assert_eq!(output.status.code(), Some(1));
+    let text = stdout(&output);
+    assert!(text.contains("parseable fixture"), "{}", text);
+    assert!(text.contains("\"path\":\"$\""), "{}", text);
+}
+
+#[test]
 fn working_directory_does_not_change_the_bytes() {
     let output = Command::new(env!("CARGO_BIN_EXE_kiln"))
         .current_dir("examples")
