@@ -34,7 +34,14 @@ fn detail(kind: &FieldType) -> String {
 
 fn bounds(kind: &FieldType) -> String {
     match kind {
-        FieldType::Int { min, max } | FieldType::Float { min, max } => format!("{}..{}", min, max),
+        FieldType::Int { min, max } => format!("{}..{}", min, max),
+        FieldType::Float { min, max } => format!(
+            "{}.{:02}..{}.{:02}",
+            min / 100,
+            min % 100,
+            max / 100,
+            max % 100
+        ),
         FieldType::String { min_len, max_len, .. } | FieldType::List { min_len, max_len, .. } => {
             format!("{}..{}", min_len, max_len)
         }

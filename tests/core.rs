@@ -402,6 +402,7 @@ fn introspection_lists_every_field_in_order() {
     assert_eq!(fields[0].name, "id");
     assert_eq!(fields[0].kind, "int");
     assert_eq!(fields[0].bounds, "1..9999");
+    assert_eq!(fields[3].bounds, "0.00..100.00");
     assert_eq!(fields[1].kind, "enum");
     assert!(fields[1].detail.contains("variants: Alice"));
     let text = kiln_core::introspect::render_text(&schema, &fields);
