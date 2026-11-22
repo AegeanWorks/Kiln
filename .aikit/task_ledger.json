@@ -1,13 +1,13 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "kiln-v10",
+    "task_id": "reforge-delivery",
     "last_phase": "phase 4",
     "active_phase": 5,
     "status": "completed",
-    "updated_at": 1795334081.7572494,
+    "updated_at": 1795338237.0354574,
     "owner": "opencode:kiln",
-    "lease_until": 1795341281.7572494,
+    "lease_until": 1795345437.0354574,
     "started_by": "opencode:kiln",
     "continuations": [],
     "workspaces": [
@@ -16,70 +16,11 @@
         "path": "projects/kiln"
       }
     ],
-    "completed_at": 1795334129.1649685,
-    "completed_head": "cb88f970e71b81398ea19381b095c2b687393f8a",
-    "completed_tree": "0ac5e043a20147668a1bc9c29ce067bba447cce6"
+    "completed_at": 1795338237.5128844,
+    "completed_head": "d888b0350bc4bae6a157f5b32204b5d3540bff4e",
+    "completed_tree": "58f14c68f91fe5bbfbca954a91d337052c0b34b3"
   },
   "checkpoints": [
-    {
-      "task_id": "kiln-v10",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/2] Plan v0.10: seed override for the check command",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795333313.201833,
-      "timestamp_str": "2026-11-22 10:41:53",
-      "agent": "opencode:kiln",
-      "impact_assessment": {
-        "why": "generate --seed can create a fixture that check cannot reproduce, breaking the generate/check symmetry",
-        "benefits": "A seed-overridden fixture can be checked and gated with the same flag",
-        "risks": "contract: check --seed is new input; dependency: std only; concurrency: none; state: the machine already carries a seed override field",
-        "mitigation": "Reuse the existing pure override path, golden CLI test, ADR before edits"
-      },
-      "plan_digest": "5d16f29f2bd242f930694f9a757816c9fad97d0dcab442ef88285fa47cf44aa7",
-      "workspaces": [
-        {
-          "name": "kiln",
-          "path": "projects/kiln"
-        }
-      ]
-    },
-    {
-      "task_id": "kiln-v10",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[1/2] check --seed symmetry with generate; 64 tests green; six gates pass",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795334081.7572494,
-      "timestamp_str": "2026-11-22 10:54:41",
-      "agent": "opencode:kiln",
-      "checklists": "passed",
-      "workspaces": [
-        {
-          "name": "kiln",
-          "path": "projects/kiln"
-        }
-      ]
-    },
-    {
-      "task_id": "kiln-v10",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'kiln-v10' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795334131.1117232,
-      "timestamp_str": "2026-11-22 10:55:31",
-      "agent": "opencode",
-      "head": "cb88f970e71b81398ea19381b095c2b687393f8a",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
     {
       "task_id": "reforge:run-1",
       "phase": "reforge stage 3",
@@ -285,6 +226,65 @@
       "timestamp_str": "2026-11-22 12:00:43",
       "agent": "opencode",
       "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge-delivery",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "[1/2] Deliver reforge-reviewed tree and publish the project",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795338215.248739,
+      "timestamp_str": "2026-11-22 12:03:35",
+      "agent": "opencode:kiln",
+      "impact_assessment": {
+        "why": "A verified reforge run must be delivered with every gate green before publishing",
+        "benefits": "Published repository matches the locally verified tree",
+        "risks": "contract: published README and gates are public; dependency: gh auth; concurrency: single push; state: ledger must be committed",
+        "mitigation": "Run the full gate suite, commit the ledger, then publish and push"
+      },
+      "plan_digest": "36966cea688254b5c9f92e6ab1cb75d0b6ec06093f164505cffda5391c649c3c",
+      "workspaces": [
+        {
+          "name": "kiln",
+          "path": "projects/kiln"
+        }
+      ]
+    },
+    {
+      "task_id": "reforge-delivery",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[2/2] All six gates green on the reforge-reviewed tree; ready to publish",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795338237.0354574,
+      "timestamp_str": "2026-11-22 12:03:57",
+      "agent": "opencode:kiln",
+      "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "kiln",
+          "path": "projects/kiln"
+        }
+      ]
+    },
+    {
+      "task_id": "reforge-delivery",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'reforge-delivery' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795338237.5771732,
+      "timestamp_str": "2026-11-22 12:03:57",
+      "agent": "opencode",
+      "head": "d888b0350bc4bae6a157f5b32204b5d3540bff4e",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
