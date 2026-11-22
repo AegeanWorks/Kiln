@@ -96,7 +96,7 @@ shell never decides which file comes next.
 ## Determinism evidence
 
 ```
-cargo test                     # 66 tests pass
+cargo test                     # 67 tests pass
 cargo run --quiet --bin kiln -- generate examples/users.kiln   # byte-identical on repeat runs
 cargo run --quiet --bin kiln -- check examples/users.kiln --fixture examples/users.json
 → fixture MATCH ... verdict: PASS (exit 0)

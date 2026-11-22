@@ -105,12 +105,26 @@ A `kiln.toml` manifest lets one CI command gate the whole fixture set:
 
 ```text
 version = 1
-fixture = examples/users.kiln, examples/users.json, json
-fixture = examples/users.kiln, examples/users.jsonl, jsonl
-fixture = examples/users.kiln, examples/users-edges.json, json, edges
+
+[[fixture]]
+schema = "examples/users.kiln"
+fixture = "examples/users.json"
+format = "json"
+
+[[fixture]]
+schema = "examples/users.kiln"
+fixture = "examples/users.jsonl"
+format = "jsonl"
+
+[[fixture]]
+schema = "examples/users.kiln"
+fixture = "examples/users-edges.json"
+format = "json"
+mode = "edges"
 ```
 
-The optional fourth value selects `seeded` (default) or `edges` generation. The manifest is versioned;
+The optional `mode` selects `seeded` (default) or `edges` generation. The reader also accepts the
+older one-line `fixture = schema, fixture, format[, mode]` form for existing manifests. The manifest is versioned;
 an unknown version is refused without changing the file. Its own state machine walks entries in
 declared order and prints an aggregate `3/3 fixtures matched` summary.
 
@@ -191,7 +205,7 @@ kiln/
 
 ## Verification
 
-`cargo test` runs 66 tests: 37 pure-core tests and 29 binary integration tests. The AIKit Phase 4 gate runs hygiene, guidelines, secrets, compat, test and a project-declared `fixtures` gate that verifies every committed fixture with `kiln check --manifest`; `python aikit.py check kiln --all-gates` reported `6/6 gates passed`.
+`cargo test` runs 67 tests: 38 pure-core tests and 29 binary integration tests. The AIKit Phase 4 gate runs hygiene, guidelines, secrets, compat, test and a project-declared `fixtures` gate that verifies every committed fixture with `kiln check --manifest`; `python aikit.py check kiln --all-gates` reported `6/6 gates passed`.
 
 ## 📜 License
 

@@ -246,6 +246,16 @@ fn manifest_parses_and_validates_entries() {
 }
 
 #[test]
+fn legacy_one_line_manifest_still_parses() {
+    let text = "version = 1\nfixture = a.kiln, a.json, json\nfixture = b.kiln, b.csv, csv, edges\n";
+    let parsed = manifest::parse(text).unwrap();
+    manifest::validate(&parsed).unwrap();
+    assert_eq!(parsed.entries.len(), 2);
+    assert_eq!(parsed.entries[0].format, Format::Json);
+    assert_eq!(parsed.entries[1].mode, GenerationMode::Edges);
+}
+
+#[test]
 fn manifest_rejects_unknown_version_and_empty_entries() {
     let wrong = manifest::parse("version = 2\nfixture = a.kiln, a.json, json\n").unwrap();
     assert!(manifest::validate(&wrong).is_err());

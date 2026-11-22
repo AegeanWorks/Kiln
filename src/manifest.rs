@@ -25,24 +25,84 @@ fn strip_comment(line: &str) -> &str {
     }
 }
 
-/// Parse the line-oriented `kiln.toml` manifest. Unknown keys fail; the source
-/// text is never modified by this reader.
+#[derive(Default)]
+struct PartialEntry {
+    schema: Option<String>,
+    fixture: Option<String>,
+    format: Option<Format>,
+    mode: Option<GenerationMode>,
+}
+
+impl PartialEntry {
+    fn finish(self, line: usize) -> Result<FixtureEntry, String> {
+        let missing = |name: &str| format!("line {}: [[fixture]] needs a '{}' key", line, name);
+        Ok(FixtureEntry {
+            schema: self.schema.ok_or_else(|| missing("schema"))?,
+            fixture: self.fixture.ok_or_else(|| missing("fixture"))?,
+            format: self.format.ok_or_else(|| missing("format"))?,
+            mode: self.mode.unwrap_or(GenerationMode::Seeded),
+        })
+    }
+}
+
+fn unquote(value: &str) -> &str {
+    let trimmed = value.trim();
+    if trimmed.len() >= 2 && trimmed.starts_with('"') && trimmed.ends_with('"') {
+        &trimmed[1..trimmed.len() - 1]
+    } else {
+        trimmed
+    }
+}
+
+fn mode_from(value: Option<&str>, line: usize) -> Result<GenerationMode, String> {
+    match value.unwrap_or("seeded") {
+        "edges" => Ok(GenerationMode::Edges),
+        "seeded" => Ok(GenerationMode::Seeded),
+        other => Err(format!("line {}: unknown generation mode '{}'", line, other)),
+    }
+}
+
+/// Parse a versioned manifest. Real TOML `[[fixture]]` tables are the primary
+/// form; the original comma-separated `fixture = a, b, c` lines remain accepted
+/// for older manifests. Unknown keys fail; the source text is never modified.
 pub fn parse(text: &str) -> Result<Manifest, String> {
     let mut version = 1u32;
     let mut entries = Vec::new();
+    let mut current: Option<PartialEntry> = None;
     for (index, raw) in text.lines().enumerate() {
         let number = index + 1;
         let line = strip_comment(raw).trim();
         if line.is_empty() {
             continue;
         }
+        if line == "[[fixture]]" {
+            if let Some(partial) = current.take() {
+                entries.push(partial.finish(number)?);
+            }
+            current = Some(PartialEntry::default());
+            continue;
+        }
         let (key, value) = line
             .split_once('=')
-            .ok_or_else(|| format!("line {}: expected 'key = value'", number))?;
-        match key.trim() {
+            .ok_or_else(|| format!("line {}: expected 'key = value' or '[[fixture]]'", number))?;
+        let key = key.trim();
+        if let Some(partial) = current.as_mut() {
+            match key {
+                "schema" => partial.schema = Some(unquote(value).to_string()),
+                "fixture" => partial.fixture = Some(unquote(value).to_string()),
+                "format" => {
+                    partial.format = Some(
+                        Format::parse(&unquote(value)).map_err(|error| format!("line {}: {}", number, error))?,
+                    );
+                }
+                "mode" => partial.mode = Some(mode_from(Some(&unquote(value)), number)?),
+                other => return Err(format!("line {}: unknown key '{}' in [[fixture]]", number, other)),
+            }
+            continue;
+        }
+        match key {
             "version" => {
-                version = value
-                    .trim()
+                version = unquote(value)
                     .parse()
                     .map_err(|_| format!("line {}: version must be an integer", number))?;
             }
@@ -54,23 +114,19 @@ pub fn parse(text: &str) -> Result<Manifest, String> {
                         number
                     ));
                 }
-                let format = Format::parse(parts[2]).map_err(|error| format!("line {}: {}", number, error))?;
-                let mode = match parts.get(3).copied() {
-                    Some("edges") => GenerationMode::Edges,
-                    Some("seeded") | None => GenerationMode::Seeded,
-                    Some(other) => {
-                        return Err(format!("line {}: unknown generation mode '{}'", number, other));
-                    }
-                };
                 entries.push(FixtureEntry {
-                    schema: parts[0].to_string(),
-                    fixture: parts[1].to_string(),
-                    format,
-                    mode,
+                    schema: unquote(parts[0]).to_string(),
+                    fixture: unquote(parts[1]).to_string(),
+                    format: Format::parse(&unquote(parts[2]))
+                        .map_err(|error| format!("line {}: {}", number, error))?,
+                    mode: mode_from(parts.get(3).map(|value| unquote(value)), number)?,
                 });
             }
             other => return Err(format!("line {}: unknown key '{}'", number, other)),
         }
+    }
+    if let Some(partial) = current.take() {
+        entries.push(partial.finish(entries.len() + 1)?);
     }
     Ok(Manifest { version, entries })
 }
