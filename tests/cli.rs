@@ -282,6 +282,42 @@ fn stdin_schema_produces_the_same_bytes_as_a_file() {
 }
 
 #[test]
+fn corpus_writes_deterministic_files() {
+    let first = std::env::temp_dir().join(format!("kiln-corpus-a-{}", std::process::id()));
+    let second = std::env::temp_dir().join(format!("kiln-corpus-b-{}", std::process::id()));
+    let _ = fs::remove_dir_all(&first);
+    let _ = fs::remove_dir_all(&second);
+    let one = kiln().args(["corpus", "examples/users.kiln", "--seeds", "1..3", "--out-dir"])
+        .arg(&first).output().unwrap();
+    let two = kiln().args(["corpus", "examples/users.kiln", "--seeds", "1..3", "--out-dir"])
+        .arg(&second).output().unwrap();
+    assert!(one.status.success(), "{}", stderr(&one));
+    assert!(two.status.success(), "{}", stderr(&two));
+    let names: Vec<String> = fs::read_dir(&first).unwrap()
+        .map(|entry| entry.unwrap().file_name().to_string_lossy().to_string()).collect();
+    assert_eq!(names.len(), 3);
+    assert!(names.contains(&"user_1.json".to_string()));
+    assert!(names.contains(&"user_3.json".to_string()));
+    for name in &names {
+        assert_eq!(
+            fs::read_to_string(first.join(name)).unwrap(),
+            fs::read_to_string(second.join(name)).unwrap()
+        );
+    }
+    let _ = fs::remove_dir_all(&first);
+    let _ = fs::remove_dir_all(&second);
+}
+
+#[test]
+fn corpus_rejects_an_oversized_range() {
+    let dir = std::env::temp_dir().join(format!("kiln-corpus-bad-{}", std::process::id()));
+    let output = kiln().args(["corpus", "examples/users.kiln", "--seeds", "1..1002", "--out-dir"])
+        .arg(&dir).output().unwrap();
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("Why:"));
+}
+
+#[test]
 fn working_directory_does_not_change_the_bytes() {
     let output = Command::new(env!("CARGO_BIN_EXE_kiln"))
         .current_dir("examples")

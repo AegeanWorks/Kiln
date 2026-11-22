@@ -6,7 +6,7 @@ from the project root.
 
 ## Constraint 1 — Functional Core
 
-`src/lib.rs` exports twelve modules; all are pure transformations of data:
+`src/lib.rs` exports thirteen modules; all are pure transformations of data:
 
 | Module | Input → output | Effect-free claim |
 |---|---|---|
@@ -20,6 +20,7 @@ from the project root.
 | `drift.rs` | two `&str` + `Format` → report text | recursive structural diff, no I/O |
 | `manifest.rs` | text → `Manifest`; `ManifestRun` + event → actions | versioned reader and a second explicit state machine |
 | `report.rs` | verdicts/changes → JSON text | stable key order, no serialization dependency |
+| `corpus.rs` | schema + seed range → prepared files; `CorpusRun` + event → actions | bounded preparation and a third explicit machine |
 | `machine.rs` | `&mut RunState` + `Event` → `Vec<Action>` | returns commands; executes none |
 | `cli.rs` | `&[String]` → `Result<Command, String>` | no `std::env` read |
 
@@ -29,7 +30,7 @@ Evidence command:
 grep -rn "std::fs|std::env|println!|eprintln!|print!|SystemTime|Instant|process::exit|ExitCode|fs::" src
 ```
 
-Result: 30 matches, **all in `src/main.rs` and `src/shell.rs`**; zero matches in the twelve core
+Result: 34 matches, **all in `src/main.rs` and `src/shell.rs`**; zero matches in the thirteen core
 modules. The core cannot read a file, read argv, write output or exit a process.
 
 ## Constraint 2 — Imperative Shell / I/O at the Edges
@@ -38,8 +39,9 @@ The shell is deliberately small:
 
 - `src/main.rs` reads argv at line 11 (`std::env::args`), dispatches the parsed `Command`, converts the
   shell's integer result to `ExitCode` at line 29. It performs no analysis.
-- `src/shell.rs` owns every side effect: `print!`/`eprintln!` (lines 14, 19), `fs::read_to_string`
-  (line 23), `fs::write` (line 32), and the human/report output (lines 252–288). Each I/O failure is
+- `src/shell.rs` owns every side effect: `print!`/`eprintln!` (lines 16, 21), `fs::read_to_string`
+  (line 34), `fs::write` (lines 43, 60), `fs::create_dir_all` (line 53), and the human/report output
+  (lines 344–382). Each I/O failure is
   diagnosed with `Why:` and `Fix:`.
 
 The shell/core boundary is two frozen DTOs: schema text enters through `Event::Loaded`, and a
@@ -83,10 +85,15 @@ delegated to the original single-fixture machine, so both layers remain enumerab
 The `diff` command is a one-shot pure transformation (read two texts, call the pure differ, print),
 so it has no stateful behaviour to model; it still performs all I/O in the shell.
 
+The v0.6 corpus command added a third machine: `CorpusRun` moves through
+`Idle → Reading → Parsing → Validating → Preparing → Writing{index} → Done`, emitting exactly one
+`Write` action per file. All renders are prepared in the pure core before any file is opened, so the
+shell never decides which file comes next.
+
 ## Determinism evidence
 
 ```
-cargo test                     # 45 tests pass
+cargo test                     # 50 tests pass
 cargo run --quiet --bin kiln -- generate examples/users.kiln   # byte-identical on repeat runs
 cargo run --quiet --bin kiln -- check examples/users.kiln --fixture examples/users.json
 → fixture MATCH ... verdict: PASS (exit 0)

@@ -28,6 +28,13 @@ pub enum Command {
         path: String,
         json: bool,
     },
+    Corpus {
+        schema: String,
+        start: u64,
+        end: u64,
+        format: Option<Format>,
+        out_dir: String,
+    },
     Demo {
         seed: i64,
     },
@@ -46,6 +53,7 @@ pub fn usage() -> String {
     out.push_str("  kiln check --manifest kiln.toml\n");
     out.push_str("  kiln diff <left> <right> [--format json|jsonl|csv]\n");
     out.push_str("  kiln demo --scripted [--seed N]\n");
+    out.push_str("  kiln corpus <schema.kiln> --seeds A..B --out-dir DIR [--format FMT]\n");
     out.push_str("  kiln inventory\n");
     out.push_str("  kiln explain\n\n");
     out.push_str("Add --json to check, diff or check --manifest for a machine-readable report.\n");
@@ -180,6 +188,46 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
             let schema = schema.ok_or_else(|| error("check needs a schema path"))?;
             let fixture = fixture.ok_or_else(|| error("check needs --fixture <FILE>"))?;
             Ok(Command::Check { schema, fixture, json })
+        }
+        "corpus" => {
+            let mut schema = None;
+            let mut seeds = None;
+            let mut out_dir = None;
+            let mut format = None;
+            let mut i = 0;
+            while i < rest.len() {
+                match rest[i].as_str() {
+                    "--seeds" => {
+                        let value = take_value(rest, &mut i, "--seeds")?;
+                        let parts: Vec<&str> = value.split("..").collect();
+                        if parts.len() != 2 {
+                            return Err(error("--seeds needs A..B"));
+                        }
+                        let start = parts[0].parse::<u64>().map_err(|_| error("--seeds needs non-negative integers"))?;
+                        let end = parts[1].parse::<u64>().map_err(|_| error("--seeds needs non-negative integers"))?;
+                        seeds = Some((start, end));
+                    }
+                    "--out-dir" => out_dir = Some(take_value(rest, &mut i, "--out-dir")?),
+                    "--format" => {
+                        let value = take_value(rest, &mut i, "--format")?;
+                        format = Some(Format::parse(&value).map_err(|message| error(&message))?);
+                    }
+                    other if other.starts_with('-') && other != "-" => {
+                        return Err(error(&format!("unknown flag '{}'", other)));
+                    }
+                    other => {
+                        if schema.is_some() {
+                            return Err(error("corpus takes exactly one schema path"));
+                        }
+                        schema = Some(other.to_string());
+                    }
+                }
+                i += 1;
+            }
+            let schema = schema.ok_or_else(|| error("corpus needs a schema path"))?;
+            let (start, end) = seeds.ok_or_else(|| error("corpus needs --seeds A..B"))?;
+            let out_dir = out_dir.ok_or_else(|| error("corpus needs --out-dir DIR"))?;
+            Ok(Command::Corpus { schema, start, end, format, out_dir })
         }
         "demo" => {
             if !rest.iter().any(|item| item == "--scripted") {

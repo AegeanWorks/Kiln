@@ -88,3 +88,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: Scripted pipelines need to sweep seeds and pipe a schema without writing temporary files
 - **Decision**: Add --seed to generate and accept '-' as a schema path, read by the shell from stdin; the seed override travels through Event::Start into the pure override step
 - **Consequences**: The core stays pure; stdin is one more edge adapter in shell.rs with the same error diagnostics
+
+### ADR-012: Add a corpus command with an explicit write state machine
+- **Date**: 2026-11-22
+- **Status**: Accepted
+- **Context**: Programmers need many deterministic fixtures for property tests, and a silent shell loop would hide partial failure
+- **Decision**: Prepare all seed renders in the pure core, then let CorpusRun emit one Write action per file in seed order with an explicit index
+- **Consequences**: The corpus is bounded, ordered and reviewable; writes remain at the shell edge with diagnosed errors

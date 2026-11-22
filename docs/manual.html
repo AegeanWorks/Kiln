@@ -43,6 +43,8 @@ record User {
 <h2>Manifest and review</h2>
 <p>A <code>kiln.toml</code> manifest gates every committed fixture in one command. It starts with <code>version = 1</code>, then one line per fixture: <code>fixture = schema, fixture, format[, seeded|edges]</code>. Entries run in declared order and the summary reports how many matched. The optional mode selects boundary generation instead of the seeded stream.</p>
 <p><code>kiln diff</code> compares two committed fixtures with the same structural differ used by <code>check</code>, so a review can see paths and values without regenerating anything. The format is inferred from the left file extension unless <code>--format</code> is supplied.</p>
+<h2>Corpora</h2>
+<p><code>kiln corpus &lt;schema&gt; --seeds A..B --out-dir DIR [--format FMT]</code> writes one deterministic fixture per seed, named <code>&lt;record&gt;_&lt;seed&gt;.&lt;ext&gt;</code>. The range is bounded to 1000 seeds. All renders are prepared in the pure core; an explicit write machine emits one write action per file so a failed write is never unaccounted for.</p>
 <h2>Machine-readable output</h2>
 <p>Add <code>--json</code> to <code>check</code>, <code>diff</code> or <code>check --manifest</code> to get one stable JSON object with <code>"schema":1</code>, a verdict and an ordered change list where relevant. Exit codes do not change, so the same command works for a terminal and for CI.</p>
 <h2>Architecture</h2>

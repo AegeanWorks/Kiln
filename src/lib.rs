@@ -7,6 +7,7 @@
 
 pub mod cli;
 pub mod compare;
+pub mod corpus;
 pub mod drift;
 pub mod generate;
 pub mod json;

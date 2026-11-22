@@ -5,6 +5,7 @@ use std::collections::VecDeque;
 use std::fs;
 use std::io::Read;
 
+use kiln_core::corpus::{self, CorpusAction, CorpusEvent, CorpusRun};
 use kiln_core::machine::{self, Action, Event, RunState};
 use kiln_core::manifest::{self, ManifestAction, ManifestEvent, ManifestRun};
 use kiln_core::model::{Format, GenerationMode, Verdict};
@@ -43,6 +44,23 @@ fn write_text(path: &str, text: &str) -> Result<(), String> {
         format!(
             "cannot write '{}': {}\nWhy: the output directory must exist and be writable.\nFix: check the parent directory or omit --out to write to stdout.",
             path, error
+        )
+    })
+}
+
+fn write_corpus_file(dir: &str, name: &str, text: &str) -> Result<(), String> {
+    let folder = std::path::Path::new(dir);
+    fs::create_dir_all(folder).map_err(|error| {
+        format!(
+            "cannot create corpus directory '{}': {}\nWhy: the output directory must be creatable.\nFix: pass a writable --out-dir path.",
+            dir, error
+        )
+    })?;
+    let path = folder.join(name);
+    fs::write(&path, text).map_err(|error| {
+        format!(
+            "cannot write corpus file '{}': {}\nWhy: the output directory must be writable.\nFix: check permissions or choose another --out-dir.",
+            path.display(), error
         )
     })
 }
@@ -250,6 +268,58 @@ pub fn run_manifest(path: String, json: bool) -> i32 {
     code
 }
 
+/// `corpus` command: prepare all seed renders in the core, then write them
+/// one at a time through the explicit corpus machine.
+pub fn run_corpus(path: String, start: u64, end: u64, format: Option<Format>, out_dir: String) -> i32 {
+    let mut state = CorpusRun::new();
+    let mut queue: VecDeque<CorpusEvent> = VecDeque::new();
+    queue.push_back(CorpusEvent::Start { path, start, end, format, out_dir });
+    let mut code = 0;
+    while let Some(event) = queue.pop_front() {
+        for action in corpus::transition(&mut state, event) {
+            match action {
+                CorpusAction::Read { path } => match read_text(&path) {
+                    Ok(text) => queue.push_back(CorpusEvent::Loaded { text }),
+                    Err(message) => queue.push_back(CorpusEvent::Failed { message }),
+                },
+                CorpusAction::Parse { text } => match schema::parse(&text) {
+                    Ok(parsed) => queue.push_back(CorpusEvent::Parsed { schema: parsed }),
+                    Err(error) => queue.push_back(CorpusEvent::Failed { message: parse_failure(&error) }),
+                },
+                CorpusAction::Validate { schema: parsed } => match schema::validate(&parsed) {
+                    Ok(()) => queue.push_back(CorpusEvent::Validated { schema: parsed }),
+                    Err(error) => queue.push_back(CorpusEvent::Failed { message: parse_failure(&error) }),
+                },
+                CorpusAction::Prepare { schema: parsed, start, end, format } => {
+                    match corpus::prepare(&parsed, start, end, format) {
+                        Ok(files) => queue.push_back(CorpusEvent::Prepared { files }),
+                        Err(error) => queue.push_back(CorpusEvent::Failed {
+                            message: format!(
+                                "cannot prepare corpus: {}\nWhy: a corpus is bounded to 1000 ordered seeds.\nFix: use a smaller A..B range.",
+                                error
+                            ),
+                        }),
+                    }
+                }
+                CorpusAction::Write { dir, name, text } => {
+                    match write_corpus_file(&dir, &name, &text) {
+                        Ok(()) => queue.push_back(CorpusEvent::Written),
+                        Err(message) => queue.push_back(CorpusEvent::Failed { message }),
+                    }
+                }
+                CorpusAction::Print { text } => print_out(&text),
+                CorpusAction::Error { message } => print_err(&message),
+                CorpusAction::Exit { code: requested } => {
+                    code = requested;
+                    queue.clear();
+                    break;
+                }
+            }
+        }
+    }
+    code
+}
+
 fn demo_schema(seed: i64) -> String {
     let positive = seed.max(0) as u64;
     let mut text = String::from("version = 1\nseed = ");
@@ -290,6 +360,7 @@ pub fn inventory() -> i32 {
     println!("cli|check|kiln check <schema.kiln> --fixture <file>");
     println!("cli|manifest|kiln check --manifest <kiln.toml>");
     println!("cli|diff|kiln diff <left> <right> [--format FMT]");
+    println!("cli|corpus|kiln corpus <schema> --seeds A..B --out-dir DIR");
     println!("cli|demo|--scripted [--seed N]");
     println!("handler|run|kiln-run");
     0
@@ -308,5 +379,6 @@ pub fn explain() -> i32 {
     println!("Drift: kiln check prints path-qualified changes when a committed fixture no longer matches");
     println!("Review: kiln diff compares two committed fixtures; kiln check --manifest gates them all");
     println!("Manifest lines: version = 1, then 'fixture = <schema>, <fixture>, <format>' per entry");
+    println!("Corpus: kiln corpus <schema> --seeds A..B --out-dir DIR writes one fixture per seed");
     0
 }

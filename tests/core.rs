@@ -2,6 +2,7 @@
 
 use kiln_core::cli::{self, Command};
 use kiln_core::compare::compare_fixture;
+use kiln_core::corpus::{self, CorpusEvent, CorpusRun};
 use kiln_core::drift::drift_report;
 use kiln_core::generate::{generate, generate_edges};
 use kiln_core::machine::{self, Action, Event, Phase, RunState};
@@ -330,6 +331,62 @@ fn cli_parses_json_flag() {
 fn cli_parses_edges_flag() {
     let args = vec!["generate".to_string(), "s.kiln".to_string(), "--edges".to_string()];
     assert!(matches!(cli::parse(&args).unwrap(), Command::Generate { edges: true, .. }));
+}
+
+#[test]
+fn corpus_prepare_is_ordered_and_bounded() {
+    let schema = example_schema();
+    let files = corpus::prepare(&schema, 1, 3, Format::Json).unwrap();
+    assert_eq!(files.len(), 3);
+    assert_eq!(files[0].name, "user_1.json");
+    assert_eq!(files[2].name, "user_3.json");
+    assert_eq!(files[0].seed, 1);
+    assert!(files.iter().all(|file| file.text.contains("\"record\": \"User\"")));
+    assert!(corpus::prepare(&schema, 1, 1001, Format::Json).is_err());
+    assert!(corpus::prepare(&schema, 5, 2, Format::Json).is_err());
+}
+
+#[test]
+fn corpus_machine_emits_one_write_per_file() {
+    let parsed = example_schema();
+    let files = corpus::prepare(&parsed, 1, 2, Format::Json).unwrap();
+    let mut state = CorpusRun::new();
+    let actions = corpus::transition(&mut state, CorpusEvent::Start {
+        path: "unused".to_string(),
+        start: 1,
+        end: 2,
+        format: None,
+        out_dir: "out".to_string(),
+    });
+    assert!(matches!(actions[0], corpus::CorpusAction::Read { .. }));
+    corpus::transition(&mut state, CorpusEvent::Loaded { text: EXAMPLE_SCHEMA.to_string() });
+    corpus::transition(&mut state, CorpusEvent::Parsed { schema: parsed.clone() });
+    corpus::transition(&mut state, CorpusEvent::Validated { schema: parsed });
+    let actions = corpus::transition(&mut state, CorpusEvent::Prepared { files });
+    assert!(matches!(&actions[0], corpus::CorpusAction::Write { name, .. } if name == "user_1.json"));
+    let actions = corpus::transition(&mut state, CorpusEvent::Written);
+    assert!(matches!(&actions[0], corpus::CorpusAction::Write { name, .. } if name == "user_2.json"));
+    let actions = corpus::transition(&mut state, CorpusEvent::Written);
+    assert_eq!(state.written, 2);
+    assert!(actions.iter().any(|action| matches!(action, corpus::CorpusAction::Exit { code: 0 })));
+}
+
+#[test]
+fn cli_parses_corpus_command() {
+    let args = vec![
+        "corpus".to_string(), "s.kiln".to_string(), "--seeds".to_string(),
+        "1..4".to_string(), "--out-dir".to_string(), "corpus".to_string(),
+    ];
+    assert_eq!(
+        cli::parse(&args).unwrap(),
+        Command::Corpus {
+            schema: "s.kiln".to_string(),
+            start: 1,
+            end: 4,
+            format: None,
+            out_dir: "corpus".to_string(),
+        }
+    );
 }
 
 #[test]
