@@ -109,3 +109,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: Programmers need the fixture contract in a standard format for editors and validators
 - **Decision**: Add kiln export <schema> that renders a draft-2020-12 JSON Schema from the validated schema in the pure core
 - **Consequences**: Another one-shot pure command; the DSL gains interoperability without adding a dependency
+
+### ADR-015: Add standalone fixture validation
+- **Date**: 2026-11-22
+- **Status**: Accepted
+- **Context**: Generated-byte comparison cannot tell whether a manually edited fixture still respects the declared schema
+- **Decision**: kiln validate reads a schema and a fixture, parses the fixture in the pure core and reports path-qualified type and bound issues with exit 0 or 1
+- **Consequences**: Validation reuses the existing JSON and CSV readers; no new state machine is needed for a one-shot check

@@ -28,6 +28,7 @@ fn main() -> ExitCode {
         }
         Ok(Command::Fields { schema, json }) => shell::run_fields(schema, json),
         Ok(Command::Export { schema }) => shell::run_export(schema),
+        Ok(Command::Validate { schema, fixture, json }) => shell::run_validate(schema, fixture, json),
         Err(message) => {
             shell::print_err(&message);
             2

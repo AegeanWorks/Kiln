@@ -43,6 +43,8 @@ record User {
 <h2>Manifest and review</h2>
 <p>A <code>kiln.toml</code> manifest gates every committed fixture in one command. It starts with <code>version = 1</code>, then one line per fixture: <code>fixture = schema, fixture, format[, seeded|edges]</code>. Entries run in declared order and the summary reports how many matched. The optional mode selects boundary generation instead of the seeded stream.</p>
 <p><code>kiln diff</code> compares two committed fixtures with the same structural differ used by <code>check</code>, so a review can see paths and values without regenerating anything. The format is inferred from the left file extension unless <code>--format</code> is supplied.</p>
+<h2>Fixture validation</h2>
+<p><code>kiln validate &lt;fixture&gt; --schema &lt;schema&gt; [--json]</code> parses a hand-edited fixture and reports type and bound violations by path, for example <code>rows[0].id</code>. It covers JSON, JSONL and CSV and never regenerates the fixture: exit 0 means clean, 1 means issues found, 2 means the fixture could not be parsed.</p>
 <h2>Contract export</h2>
 <p><code>kiln export &lt;schema&gt;</code> emits a draft-2020-12 JSON Schema describing one generated record: object properties from the declared fields, type and bounds per field, a required list and <code>additionalProperties: false</code>. It is a pure one-shot rendering; editors and validators can consume the result without knowing the Kiln DSL.</p>
 <h2>Schema introspection</h2>

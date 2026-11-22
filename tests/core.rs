@@ -419,6 +419,50 @@ fn json_schema_export_maps_every_field_type() {
     assert!(matches!(parsed, kiln_core::json::Json::Object(_)));
 }
 
+const GOLDEN_JSONL: &str = include_str!("../examples/users.jsonl");
+
+#[test]
+fn validation_accepts_all_golden_fixtures() {
+    let schema = example_schema();
+    assert!(kiln_core::validate::validate(&schema, GOLDEN_JSON, Format::Json).unwrap().is_empty());
+    assert!(kiln_core::validate::validate(&schema, GOLDEN_JSONL, Format::Jsonl).unwrap().is_empty());
+    assert!(kiln_core::validate::validate(&schema, GOLDEN_CSV, Format::Csv).unwrap().is_empty());
+}
+
+#[test]
+fn validation_reports_out_of_range_and_missing_fields() {
+    let schema = example_schema();
+    let broken = "{\"rows\":[{\"id\":99999,\"name\":\"Nobody\"}]}";
+    let issues = kiln_core::validate::validate(&schema, broken, Format::Json).unwrap();
+    assert!(issues.iter().any(|issue| issue.path == "rows[0].id" && issue.message.contains("outside")));
+    assert!(issues.iter().any(|issue| issue.path == "rows[0].name"));
+    assert!(issues.iter().any(|issue| issue.path == "rows[0].active"));
+    let text = kiln_core::validate::render_text(Format::Json, &issues);
+    assert!(text.contains("FAIL"), "{}", text);
+}
+
+#[test]
+fn validation_rejects_malformed_fixtures_as_errors() {
+    let schema = example_schema();
+    assert!(kiln_core::validate::validate(&schema, "{not json", Format::Json).is_err());
+}
+
+#[test]
+fn cli_parses_validate_command() {
+    let args = vec![
+        "validate".to_string(), "f.json".to_string(), "--schema".to_string(),
+        "s.kiln".to_string(), "--json".to_string(),
+    ];
+    assert_eq!(
+        cli::parse(&args).unwrap(),
+        Command::Validate {
+            schema: "s.kiln".to_string(),
+            fixture: "f.json".to_string(),
+            json: true,
+        }
+    );
+}
+
 #[test]
 fn cli_parses_export_command() {
     let args = vec!["export".to_string(), "s.kiln".to_string()];

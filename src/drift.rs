@@ -100,7 +100,7 @@ fn diff_json(expected: &Json, actual: &Json, path: &str, out: &mut Vec<Change>) 
     }
 }
 
-fn parse_csv(text: &str) -> Result<Vec<Vec<String>>, String> {
+pub fn parse_csv(text: &str) -> Result<Vec<Vec<String>>, String> {
     let chars: Vec<char> = text.chars().collect();
     let mut rows = Vec::new();
     let mut row = Vec::new();

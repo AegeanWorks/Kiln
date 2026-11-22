@@ -320,6 +320,54 @@ pub fn run_corpus(path: String, start: u64, end: u64, format: Option<Format>, ou
     code
 }
 
+/// `validate` command: check a fixture's structure against a schema without regenerating.
+pub fn run_validate(schema_path: String, fixture_path: String, json: bool) -> i32 {
+    let loaded = read_text(&schema_path).and_then(|text| {
+        let parsed = schema::parse(&text).map_err(|error| parse_failure(&error))?;
+        schema::validate(&parsed).map_err(|error| parse_failure(&error))?;
+        Ok(parsed)
+    });
+    let parsed_schema = match loaded {
+        Ok(value) => value,
+        Err(message) => {
+            print_err(&message);
+            return 2;
+        }
+    };
+    let format = match Format::from_path(&fixture_path) {
+        Ok(value) => value,
+        Err(message) => {
+            print_err(&format!("{}\nWhy: validation needs a format to parse the fixture.\nFix: use a .json, .jsonl or .csv fixture path.", message));
+            return 2;
+        }
+    };
+    let fixture = match read_text(&fixture_path) {
+        Ok(text) => text,
+        Err(message) => {
+            print_err(&message);
+            return 2;
+        }
+    };
+    match kiln_core::validate::validate(&parsed_schema, &fixture, format) {
+        Ok(issues) => {
+            let text = if json {
+                kiln_core::validate::render_json(format, &issues)
+            } else {
+                kiln_core::validate::render_text(format, &issues)
+            };
+            print_out(&text);
+            if issues.is_empty() { 0 } else { 1 }
+        }
+        Err(error) => {
+            print_err(&format!(
+                "cannot parse fixture as {}: {}\nWhy: validation needs a readable fixture of the inferred format.\nFix: regenerate the fixture with kiln generate.",
+                format.label(), error
+            ));
+            2
+        }
+    }
+}
+
 /// `export` command: emit a standard JSON Schema contract for a schema.
 pub fn run_export(path: String) -> i32 {
     let parsed = read_text(&path).and_then(|text| {
@@ -407,6 +455,7 @@ pub fn inventory() -> i32 {
     println!("cli|corpus|kiln corpus <schema> --seeds A..B --out-dir DIR");
     println!("cli|fields|kiln fields <schema.kiln> [--json]");
     println!("cli|export|kiln export <schema.kiln>");
+    println!("cli|validate|kiln validate <fixture> --schema <schema.kiln>");
     println!("cli|demo|--scripted [--seed N]");
     println!("handler|run|kiln-run");
     0
@@ -428,5 +477,6 @@ pub fn explain() -> i32 {
     println!("Corpus: kiln corpus <schema> --seeds A..B --out-dir DIR writes one fixture per seed");
     println!("Fields: kiln fields <schema> [--json] lists field names, types, details and bounds");
     println!("Export: kiln export <schema> emits a draft-2020-12 JSON Schema contract");
+    println!("Validate: kiln validate <fixture> --schema <schema> [--json] checks types and bounds");
     0
 }

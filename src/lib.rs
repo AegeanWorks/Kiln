@@ -20,3 +20,4 @@ pub mod render;
 pub mod report;
 pub mod rng;
 pub mod schema;
+pub mod validate;

@@ -347,6 +347,33 @@ fn export_emits_a_valid_json_schema_contract() {
 }
 
 #[test]
+fn validate_accepts_a_golden_fixture() {
+    let output = kiln()
+        .args(["validate", "examples/users.json", "--schema", "examples/users.kiln"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert!(stdout(&output).contains("PASS"));
+}
+
+#[test]
+fn validate_rejects_a_stale_fixture_with_json_output() {
+    let fixture = write_temp("validation", "json", "{\"rows\":[{\"id\":99999999}]}\n");
+    let output = kiln()
+        .arg("validate")
+        .arg(&fixture)
+        .args(["--schema", "examples/users.kiln", "--json"])
+        .output()
+        .unwrap();
+    cleanup(&fixture);
+    assert_eq!(output.status.code(), Some(1), "{}", stdout(&output));
+    let text = stdout(&output);
+    assert!(text.contains("\"command\":\"validate\""), "{}", text);
+    assert!(text.contains("\"verdict\":\"FAIL\""), "{}", text);
+    assert!(text.contains("rows[0]"), "{}", text);
+}
+
+#[test]
 fn working_directory_does_not_change_the_bytes() {
     let output = Command::new(env!("CARGO_BIN_EXE_kiln"))
         .current_dir("examples")

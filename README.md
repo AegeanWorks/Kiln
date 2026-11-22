@@ -83,6 +83,7 @@ Validation refuses an unknown schema version, an inverted or oversized range, du
 | `kiln corpus <schema> --seeds A..B --out-dir DIR [--format FMT]` | Write one deterministic fixture per seed (≤1000), named `<record>_<seed>.<ext>` |
 | `kiln fields <schema> [--json]` | List field names, types, details and bounds in declaration order |
 | `kiln export <schema>` | Emit a draft-2020-12 JSON Schema contract for the record |
+| `kiln validate <fixture> --schema <schema> [--json]` | Check types and bounds of a hand-edited fixture without regenerating (exit 0 clean, 1 issues, 2 parse error) |
 | `kiln demo --scripted [--seed N]` | Headless WORLD-DELTA drive used by AIKit's compat gate |
 | `kiln inventory` | `kind\|name\|locator` lines describing the command surface |
 | `kiln explain` | Architecture and schema reference |
@@ -130,7 +131,7 @@ Changing the generator is a deliberate golden update, which is the review this k
 
 | Constraint | Implementation |
 |---|---|
-| Functional Core | `src/schema.rs`, `rng.rs`, `generate.rs`, `render.rs`, `compare.rs`, `json.rs`, `jsonschema.rs`, `drift.rs`, `report.rs`, `manifest.rs`, `corpus.rs`, `introspect.rs`, `machine.rs`, `cli.rs` and `model.rs` are pure: data in, data out. They contain no `std::fs`, `std::env`, clock, OS randomness or process exit. |
+| Functional Core | `src/schema.rs`, `rng.rs`, `generate.rs`, `render.rs`, `compare.rs`, `json.rs`, `jsonschema.rs`, `drift.rs`, `validate.rs`, `report.rs`, `manifest.rs`, `corpus.rs`, `introspect.rs`, `machine.rs`, `cli.rs` and `model.rs` are pure: data in, data out. They contain no `std::fs`, `std::env`, clock, OS randomness or process exit. |
 | Imperative Shell | `src/shell.rs` owns every file read/write and every print. `src/main.rs` reads argv and converts the shell's integer code to `ExitCode`. |
 | I/O at the Edges | The boundary is two frozen DTOs: schema text enters, a `Rendered` value leaves. Side effects are represented as `Action` values emitted by the pure machine and executed only in the shell. |
 | Explicit State Machines | `GenerateState` moves through `Idle → Loading → Parsing → Validating → Generating → Rendering → Done`, with `Comparing` for the fixture gate and `Failed` for any diagnosed error. Each event has one transition; an event in the wrong phase yields an error action, never a silent no-op. |
@@ -155,7 +156,7 @@ kiln/
 ├── src/                      <- pure core plus thin executable edges
 │   ├── main.rs               <- executable edge: argv in, ExitCode out
 │   ├── shell.rs              <- imperative shell: all fs and stdout/stderr I/O
-│   ├── lib.rs                <- exports the fifteen pure core modules
+│   ├── lib.rs                <- exports the sixteen pure core modules
 │   ├── model.rs              <- frozen data types and generation mode
 │   ├── schema.rs             <- versioned schema reader and validator
 │   ├── rng.rs                <- fixed xorshift64 stream
@@ -169,6 +170,7 @@ kiln/
 │   ├── corpus.rs             <- bounded seed corpus and its write machine
 │   ├── introspect.rs         <- schema field descriptions for docs and CI
 │   ├── jsonschema.rs         <- draft-2020-12 contract export
+│   ├── validate.rs           <- fixture type and bound validation
 │   ├── machine.rs            <- explicit generation state machine
 │   └── cli.rs                <- pure argument parser
 ├── tests/
@@ -189,7 +191,7 @@ kiln/
 
 ## Verification
 
-`cargo test` runs 57 tests: 32 pure-core tests and 25 binary integration tests. The AIKit Phase 4 gate runs hygiene, guidelines, secrets, compat, test and a project-declared `fixtures` gate that verifies every committed fixture with `kiln check --manifest`; `python aikit.py check kiln --all-gates` reported `6/6 gates passed`.
+`cargo test` runs 63 tests: 36 pure-core tests and 27 binary integration tests. The AIKit Phase 4 gate runs hygiene, guidelines, secrets, compat, test and a project-declared `fixtures` gate that verifies every committed fixture with `kiln check --manifest`; `python aikit.py check kiln --all-gates` reported `6/6 gates passed`.
 
 ## 📜 License
 
