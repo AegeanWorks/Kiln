@@ -29,6 +29,7 @@ pub struct RunState {
     pub mode: Option<GenerationMode>,
     pub format_override: Option<Format>,
     pub count_override: Option<usize>,
+    pub seed_override: Option<u64>,
     pub out_path: Option<String>,
     pub fixture_text: String,
     pub check: bool,
@@ -46,6 +47,7 @@ impl RunState {
             mode: None,
             format_override: None,
             count_override: None,
+            seed_override: None,
             out_path: None,
             fixture_text: String::new(),
             check: false,
@@ -66,6 +68,7 @@ pub enum Event {
         check: bool,
         mode: GenerationMode,
         json: bool,
+        seed: Option<u64>,
     },
     Loaded { text: String },
     Parsed { schema: Schema },
@@ -92,13 +95,16 @@ pub enum Action {
     Exit { code: i32 },
 }
 
-fn with_overrides(schema: Schema, format: Option<Format>, count: Option<usize>) -> Schema {
+fn with_overrides(schema: Schema, format: Option<Format>, count: Option<usize>, seed: Option<u64>) -> Schema {
     let mut schema = schema;
     if let Some(value) = format {
         schema.format = value;
     }
     if let Some(value) = count {
         schema.count = value;
+    }
+    if let Some(value) = seed {
+        schema.seed = value;
     }
     schema
 }
@@ -115,9 +121,10 @@ fn unexpected(phase: Phase) -> Vec<Action> {
 /// Advance the machine by one event. Returns the actions to execute.
 pub fn transition(state: &mut RunState, event: Event) -> Vec<Action> {
     match (state.phase, event) {
-        (Phase::Idle, Event::Start { path, format, count, out, fixture_text, check, mode, json }) => {
+        (Phase::Idle, Event::Start { path, format, count, out, fixture_text, check, mode, json, seed }) => {
             state.format_override = format;
             state.count_override = count;
+            state.seed_override = seed;
             state.out_path = out;
             state.fixture_text = fixture_text;
             state.check = check;
@@ -137,7 +144,7 @@ pub fn transition(state: &mut RunState, event: Event) -> Vec<Action> {
             vec![Action::Validate { schema }]
         }
         (Phase::Validating, Event::Validated { schema }) => {
-            let schema = with_overrides(schema, state.format_override, state.count_override);
+            let schema = with_overrides(schema, state.format_override, state.count_override, state.seed_override);
             state.format = Some(schema.format);
             state.schema = Some(schema.clone());
             state.phase = Phase::Generating;

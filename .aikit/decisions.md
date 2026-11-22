@@ -81,3 +81,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A project that sells fixture determinism should have its own fixtures gated by the same tool
 - **Decision**: Declare a custom 'fixtures' gate in .aikit/project.json that runs kiln check --manifest examples/kiln.toml
 - **Consequences**: Every AIKit check of Kiln now proves all committed fixtures; the gate is visible alongside hygiene, test and compat
+
+### ADR-011: Support seed overrides and stdin schemas at the edge
+- **Date**: 2026-11-22
+- **Status**: Accepted
+- **Context**: Scripted pipelines need to sweep seeds and pipe a schema without writing temporary files
+- **Decision**: Add --seed to generate and accept '-' as a schema path, read by the shell from stdin; the seed override travels through Event::Start into the pure override step
+- **Consequences**: The core stays pure; stdin is one more edge adapter in shell.rs with the same error diagnostics

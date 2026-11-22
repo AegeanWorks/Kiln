@@ -92,6 +92,7 @@ fn machine_applies_count_and_format_overrides() {
         check: false,
         mode: GenerationMode::Seeded,
         json: false,
+        seed: Some(99),
     });
     assert_eq!(state.phase, Phase::Loading);
     assert!(matches!(actions[0], Action::Read { .. }));
@@ -106,6 +107,7 @@ fn machine_applies_count_and_format_overrides() {
             assert_eq!(*mode, GenerationMode::Seeded);
             assert_eq!(schema.count, 1);
             assert_eq!(schema.format, Format::Csv);
+            assert_eq!(schema.seed, 99);
         }
         other => panic!("expected Generate, got {:?}", other),
     }
@@ -141,6 +143,7 @@ fn machine_check_mode_returns_a_nonzero_code_on_mismatch() {
         check: true,
         mode: GenerationMode::Seeded,
         json: false,
+        seed: None,
     });
     machine::transition(&mut state, Event::Loaded { text: EXAMPLE_SCHEMA.to_string() });
     machine::transition(&mut state, Event::Parsed { schema: example_schema() });
@@ -175,6 +178,7 @@ fn cli_parses_every_command() {
             count: Some(3),
             out: None,
             edges: false,
+            seed: None,
         }
     );
     let check = vec!["check".to_string(), "s.kiln".to_string(), "--fixture".to_string(), "f.json".to_string()];

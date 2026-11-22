@@ -2,12 +2,14 @@
 //! executable, including exit codes and stdout/stderr contracts.
 
 use std::fs;
+use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
+use std::process::{Command, Output, Stdio};
 
 use kiln_core::model::Verdict;
 
 const GOLDEN_JSON: &str = include_str!("../examples/users.json");
+const EXAMPLE_SCHEMA: &str = include_str!("../examples/users.kiln");
 const GOLDEN_JSONL: &str = include_str!("../examples/users.jsonl");
 
 // Same fields as the example, different seed: edge generation must not change.
@@ -252,6 +254,31 @@ fn manifest_json_report_is_a_single_object() {
     let text = stdout(&output);
     assert_eq!(text.lines().count(), 1, "{}", text);
     assert!(text.contains("\"matched\":3,\"total\":3"), "{}", text);
+}
+
+#[test]
+fn seed_override_changes_generated_bytes() {
+    let base = kiln().args(["generate", "examples/users.kiln"]).output().unwrap();
+    let changed = kiln()
+        .args(["generate", "examples/users.kiln", "--seed", "7"])
+        .output()
+        .unwrap();
+    assert!(base.status.success() && changed.status.success());
+    assert_ne!(stdout(&base), stdout(&changed));
+    assert_eq!(stdout(&base).trim_end(), GOLDEN_JSON.trim_end());
+}
+
+#[test]
+fn stdin_schema_produces_the_same_bytes_as_a_file() {
+    let mut child = kiln().args(["generate", "-"])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    child.stdin.take().unwrap().write_all(EXAMPLE_SCHEMA.as_bytes()).unwrap();
+    let output = child.wait_with_output().unwrap();
+    assert!(output.status.success(), "{}", stderr(&output));
+    assert_eq!(stdout(&output).trim_end(), GOLDEN_JSON.trim_end());
 }
 
 #[test]

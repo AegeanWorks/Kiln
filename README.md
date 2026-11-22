@@ -76,7 +76,7 @@ Validation refuses an unknown schema version, an inverted or oversized range, du
 
 | Command | Effect |
 |---|---|
-| `kiln generate <schema> [--format json\|jsonl\|csv] [--count N] [--out FILE] [--edges]` | Generate and render fixtures; `--edges` emits boundary records and ignores `seed`/`count` |
+| `kiln generate <schema> [--format json\|jsonl\|csv] [--count N] [--out FILE] [--edges] [--seed N]` | Generate and render fixtures; `--edges` emits boundary records and ignores `seed`/`count`; `--seed` overrides the schema seed. A schema path of `-` reads stdin |
 | `kiln check <schema> --fixture <FILE>` | Regenerate and compare bytes; on mismatch print path-qualified drift; CRLF and trailing blank lines are normalized |
 | `kiln check --manifest <kiln.toml>` | Verify every declared fixture in order; exit 0 if all match, 1 if any differs, 2 on a manifest error |
 | `kiln diff <left> <right> [--format FMT]` | Structurally compare two committed fixtures without regenerating; format is inferred from the left extension |
@@ -183,7 +183,7 @@ kiln/
 
 ## Verification
 
-`cargo test` runs 43 tests: 25 pure-core tests and 18 binary integration tests. The AIKit Phase 4 gate runs hygiene, guidelines, secrets, compat, test and a project-declared `fixtures` gate that verifies every committed fixture with `kiln check --manifest`; `python aikit.py check kiln --all-gates` reported `6/6 gates passed`.
+`cargo test` runs 45 tests: 25 pure-core tests and 20 binary integration tests. The AIKit Phase 4 gate runs hygiene, guidelines, secrets, compat, test and a project-declared `fixtures` gate that verifies every committed fixture with `kiln check --manifest`; `python aikit.py check kiln --all-gates` reported `6/6 gates passed`.
 
 ## 📜 License
 

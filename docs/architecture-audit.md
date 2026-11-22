@@ -86,7 +86,7 @@ so it has no stateful behaviour to model; it still performs all I/O in the shell
 ## Determinism evidence
 
 ```
-cargo test                     # 43 tests pass
+cargo test                     # 45 tests pass
 cargo run --quiet --bin kiln -- generate examples/users.kiln   # byte-identical on repeat runs
 cargo run --quiet --bin kiln -- check examples/users.kiln --fixture examples/users.json
 → fixture MATCH ... verdict: PASS (exit 0)

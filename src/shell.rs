@@ -3,6 +3,7 @@
 
 use std::collections::VecDeque;
 use std::fs;
+use std::io::Read;
 
 use kiln_core::machine::{self, Action, Event, RunState};
 use kiln_core::manifest::{self, ManifestAction, ManifestEvent, ManifestRun};
@@ -20,6 +21,15 @@ pub fn print_err(message: &str) {
 }
 
 fn read_text(path: &str) -> Result<String, String> {
+    if path == "-" {
+        let mut input = String::new();
+        return std::io::stdin().read_to_string(&mut input).map(|_| input).map_err(|error| {
+            format!(
+                "cannot read stdin: {}\nWhy: the piped schema must be valid UTF-8.\nFix: pipe a .kiln schema into kiln generate -.",
+                error
+            )
+        });
+    }
     fs::read_to_string(path).map_err(|error| {
         format!(
             "cannot read '{}': {}\nWhy: the input must exist and be valid UTF-8.\nFix: pass the path to a readable .kiln schema or fixture.",
@@ -114,6 +124,7 @@ pub fn run_generate(
     count: Option<usize>,
     out: Option<String>,
     edges: bool,
+    seed: Option<u64>,
 ) -> i32 {
     run_machine(Event::Start {
         path,
@@ -124,6 +135,7 @@ pub fn run_generate(
         check: false,
         mode: if edges { GenerationMode::Edges } else { GenerationMode::Seeded },
         json: false,
+        seed,
     }, false)
 }
 
@@ -140,6 +152,7 @@ fn run_single_check(path: String, fixture: String, format: Option<Format>, mode:
             check: true,
             mode,
             json,
+            seed: None,
         }, quiet),
         Err(message) => {
             print_err(&message);
