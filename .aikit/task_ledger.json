@@ -22,336 +22,6 @@
   },
   "checkpoints": [
     {
-      "task_id": "kiln-v04",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[2/3] JSON reports for check/diff/manifest, AIKit fixtures gate declared, docs and audit updated; 6/6 gates green",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795313899.4305248,
-      "timestamp_str": "2026-11-22 05:18:19",
-      "agent": "opencode:kiln",
-      "checklists": "passed",
-      "workspaces": [
-        {
-          "name": "kiln",
-          "path": "projects/kiln"
-        }
-      ]
-    },
-    {
-      "task_id": "kiln-v04",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'kiln-v04' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795313900.044349,
-      "timestamp_str": "2026-11-22 05:18:20",
-      "agent": "opencode",
-      "head": "e53a79590d6da3ec67d18c0d66802fe92a291919",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
-    {
-      "task_id": "kiln-v05",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/2] Plan v0.5: seed override and stdin schema input",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795313954.1330533,
-      "timestamp_str": "2026-11-22 05:19:14",
-      "agent": "opencode:kiln",
-      "impact_assessment": {
-        "why": "Scripts need to explore seeds and pipe schemas without creating temporary files",
-        "benefits": "A single seed can be overridden on the CLI; schemas can come from stdin; still no state outside the machine",
-        "risks": "contract: --seed and '-' path are new inputs; dependency: std only; concurrency: single-threaded; state: seed override must flow through the same machine fields",
-        "mitigation": "Golden tests for seed override, stdin integration test, ADR recorded before edits"
-      },
-      "plan_digest": "585f75f4b5ff9de2c32adaa53a044b66c42bb5178f307f18857e9b376e21d405",
-      "workspaces": [
-        {
-          "name": "kiln",
-          "path": "projects/kiln"
-        }
-      ]
-    },
-    {
-      "task_id": "kiln-v05",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[1/2] Seed override and stdin schema edge; 45 tests green; all six AIKit gates pass",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795314254.858869,
-      "timestamp_str": "2026-11-22 05:24:14",
-      "agent": "opencode:kiln",
-      "checklists": "passed",
-      "workspaces": [
-        {
-          "name": "kiln",
-          "path": "projects/kiln"
-        }
-      ]
-    },
-    {
-      "task_id": "kiln-v05",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'kiln-v05' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795314255.4087467,
-      "timestamp_str": "2026-11-22 05:24:15",
-      "agent": "opencode",
-      "head": "d8c8738c391e5fb7ee7dbec78a41ffacf4272d61",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
-    {
-      "task_id": "kiln-v06",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/2] Plan v0.6: deterministic corpus generation across a seed range",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795314287.9406016,
-      "timestamp_str": "2026-11-22 05:24:47",
-      "agent": "opencode:kiln",
-      "impact_assessment": {
-        "why": "Property-based testing needs a stable corpus of many seeds, generated once and reviewed like any other fixture",
-        "benefits": "A reproducible directory of fixtures from one schema; explicit write phases; bounded output",
-        "risks": "contract: corpus filenames and bounds are public; dependency: std only; concurrency: sequential writes; state: an explicit machine must own the write loop",
-        "mitigation": "Bound the range to 1000 seeds, golden tests for filenames and bytes, ADR recorded before edits"
-      },
-      "plan_digest": "d4810c27458b52167aeae04f7982f9556029b03a2819f252d0d6f0414ffbae34",
-      "workspaces": [
-        {
-          "name": "kiln",
-          "path": "projects/kiln"
-        }
-      ]
-    },
-    {
-      "task_id": "kiln-v06",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[1/2] Corpus command with bounded seeds and explicit write machine; 50 tests green; six gates pass",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795314602.8726919,
-      "timestamp_str": "2026-11-22 05:30:02",
-      "agent": "opencode:kiln",
-      "checklists": "passed",
-      "workspaces": [
-        {
-          "name": "kiln",
-          "path": "projects/kiln"
-        }
-      ]
-    },
-    {
-      "task_id": "kiln-v06",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'kiln-v06' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795314606.3867176,
-      "timestamp_str": "2026-11-22 05:30:06",
-      "agent": "opencode",
-      "head": "d56603eb70da63296904a52f32e3c0e26e1c9a36",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
-    {
-      "task_id": "kiln-v07",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/2] Plan v0.7: schema field introspection command",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795314656.4144893,
-      "timestamp_str": "2026-11-22 05:30:56",
-      "agent": "opencode:kiln",
-      "impact_assessment": {
-        "why": "Programmers need a machine-readable description of a schema for docs and CI checks",
-        "benefits": "One command lists field names, types and bounds without regenerating data",
-        "risks": "contract: field descriptor output is public; dependency: std only; concurrency: none; state: one-shot pure transformation",
-        "mitigation": "Golden text and JSON tests, ADR recorded before edits"
-      },
-      "plan_digest": "6ce5bbccf539196f2700017c7192cb10253de67ac4c5ff1071e5ca6d18df48a0",
-      "workspaces": [
-        {
-          "name": "kiln",
-          "path": "projects/kiln"
-        }
-      ]
-    },
-    {
-      "task_id": "kiln-v07",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[1/2] Field introspection command with text and JSON output; 54 tests green; six gates pass",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795314908.9919786,
-      "timestamp_str": "2026-11-22 05:35:08",
-      "agent": "opencode:kiln",
-      "checklists": "passed",
-      "workspaces": [
-        {
-          "name": "kiln",
-          "path": "projects/kiln"
-        }
-      ]
-    },
-    {
-      "task_id": "kiln-v07",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'kiln-v07' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795314909.512341,
-      "timestamp_str": "2026-11-22 05:35:09",
-      "agent": "opencode",
-      "head": "b62902345e6da181276a701ed8a7d2783935de30",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
-    {
-      "task_id": "kiln-v08",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/2] Plan v0.8: JSON Schema export command",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795329937.0745757,
-      "timestamp_str": "2026-11-22 09:45:37",
-      "agent": "opencode:kiln",
-      "impact_assessment": {
-        "why": "A compact fixture DSL is useful only if other tools can consume its contract; JSON Schema is the common bridge",
-        "benefits": "Editors and validators can check Kiln fixtures; the DSL becomes interoperable without dependencies",
-        "risks": "contract: exported JSON Schema is public; dependency: std only; concurrency: none; state: one-shot pure transformation",
-        "mitigation": "Golden JSON Schema test, CLI test, ADR before edits"
-      },
-      "plan_digest": "50a317ae4b8ea980a1bd82b82ca4367d38b583e1015b86ee72d9dd52846e752a",
-      "workspaces": [
-        {
-          "name": "kiln",
-          "path": "projects/kiln"
-        }
-      ]
-    },
-    {
-      "task_id": "kiln-v08",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[1/2] JSON Schema export command; 57 tests green; six gates pass",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795330426.6584988,
-      "timestamp_str": "2026-11-22 09:53:46",
-      "agent": "opencode:kiln",
-      "checklists": "passed",
-      "workspaces": [
-        {
-          "name": "kiln",
-          "path": "projects/kiln"
-        }
-      ]
-    },
-    {
-      "task_id": "kiln-v08",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'kiln-v08' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795330429.9458926,
-      "timestamp_str": "2026-11-22 09:53:49",
-      "agent": "opencode",
-      "head": "8b2090bcde6870f9500a08f1f22dd8a1a04d9f46",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
-    {
-      "task_id": "kiln-v09",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/2] Plan v0.9: validate a committed fixture against its schema",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795332361.8943505,
-      "timestamp_str": "2026-11-22 10:26:01",
-      "agent": "opencode:kiln",
-      "impact_assessment": {
-        "why": "Check verifies a fixture matches generated bytes; a hand-edited fixture needs a structural validation that does not regenerate",
-        "benefits": "Reviewers can check edited fixtures for type and bound violations before CI; JSON and CSV both covered",
-        "risks": "contract: issue paths and verdict output are public; dependency: std only; concurrency: none; state: one-shot pure validation",
-        "mitigation": "Golden core tests for valid and invalid fixtures, CLI exit-code tests, ADR before edits"
-      },
-      "plan_digest": "a26066029fa457e58025bb5a0a795353ad0052e8ba955ef9d1599a1a4794b0c2",
-      "workspaces": [
-        {
-          "name": "kiln",
-          "path": "projects/kiln"
-        }
-      ]
-    },
-    {
-      "task_id": "kiln-v09",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[1/2] Standalone fixture validation with JSON/CSV/JSONL support; 63 tests green; six gates pass",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795332987.460174,
-      "timestamp_str": "2026-11-22 10:36:27",
-      "agent": "opencode:kiln",
-      "checklists": "passed",
-      "workspaces": [
-        {
-          "name": "kiln",
-          "path": "projects/kiln"
-        }
-      ]
-    },
-    {
-      "task_id": "kiln-v09",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'kiln-v09' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795332991.5280538,
-      "timestamp_str": "2026-11-22 10:36:31",
-      "agent": "opencode",
-      "head": "f4a4496ca201f378e29f9a1220e2dd2b6e687af1",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
-    {
       "task_id": "kiln-v10",
       "phase": "phase 2",
       "phase_num": 2,
@@ -409,6 +79,212 @@
         ],
         "forced": false
       }
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 3",
+      "phase_num": 3,
+      "description": "Reforge stage 3: window 9, 3 commit(s), 12 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired, empty \u2014 nothing to commit",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795337114.4677045,
+      "timestamp_str": "2026-11-22 11:45:14",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 3",
+      "phase_num": 3,
+      "description": "Reforge stage 3: stage 3 host review reviewed; run active; coverage 27/27",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795337175.625468,
+      "timestamp_str": "2026-11-22 11:46:15",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 4",
+      "phase_num": 3,
+      "description": "Reforge stage 4: window 12, 3 commit(s), 13 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired, empty \u2014 nothing to commit",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795337266.7231236,
+      "timestamp_str": "2026-11-22 11:47:46",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 4",
+      "phase_num": 3,
+      "description": "Reforge stage 4: stage 4 host review reviewed; run active; coverage 27/27",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795337324.6972969,
+      "timestamp_str": "2026-11-22 11:48:44",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 5",
+      "phase_num": 3,
+      "description": "Reforge stage 5: window 15, 3 commit(s), 12 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired, empty \u2014 nothing to commit",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795337391.6372602,
+      "timestamp_str": "2026-11-22 11:49:51",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 5",
+      "phase_num": 3,
+      "description": "Reforge stage 5: stage 5 host review reviewed; run active; coverage 28/28",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795337443.3974473,
+      "timestamp_str": "2026-11-22 11:50:43",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 6",
+      "phase_num": 3,
+      "description": "Reforge stage 6: window 18, 3 commit(s), 15 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired, empty \u2014 nothing to commit",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795337453.7149887,
+      "timestamp_str": "2026-11-22 11:50:53",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 6",
+      "phase_num": 3,
+      "description": "Reforge stage 6: stage 6 host review partial; run active; coverage 69/75",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795337580.1479998,
+      "timestamp_str": "2026-11-22 11:53:00",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 6",
+      "phase_num": 3,
+      "description": "Reforge stage 6: stage 6 host review reviewed; run active; coverage 75/75",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795337622.8137784,
+      "timestamp_str": "2026-11-22 11:53:42",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 7",
+      "phase_num": 3,
+      "description": "Reforge stage 7: window 21, 3 commit(s), 14 file(s) reviewed (unreviewed), 1 finding(s), 0 repaired, empty \u2014 nothing to commit (defect=1)",
+      "files_affected": [
+        "examples/kiln.toml"
+      ],
+      "status": "in_progress",
+      "timestamp": 1795337701.3674786,
+      "timestamp_str": "2026-11-22 11:55:01",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 7",
+      "phase_num": 3,
+      "description": "Reforge stage 7: stage 7 host review reviewed; run active; coverage 35/35",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795337906.8673787,
+      "timestamp_str": "2026-11-22 11:58:26",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 8",
+      "phase_num": 3,
+      "description": "Reforge stage 8: window 24, 3 commit(s), 6 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired, empty \u2014 nothing to commit",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795337916.83173,
+      "timestamp_str": "2026-11-22 11:58:36",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 8",
+      "phase_num": 3,
+      "description": "Reforge stage 8: stage 8 host review reviewed; run active; coverage 8/8",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795337940.1312559,
+      "timestamp_str": "2026-11-22 11:59:00",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 9",
+      "phase_num": 3,
+      "description": "Reforge stage 9: window 27, 3 commit(s), 17 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired, empty \u2014 nothing to commit",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795337950.6052766,
+      "timestamp_str": "2026-11-22 11:59:10",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 9",
+      "phase_num": 3,
+      "description": "Reforge stage 9: stage 9 host review reviewed; run active; coverage 54/54",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795337999.0108085,
+      "timestamp_str": "2026-11-22 11:59:59",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 10",
+      "phase_num": 3,
+      "description": "Reforge stage 10: window 30, 3 commit(s), 37 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired, empty \u2014 nothing to commit",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795338011.3414762,
+      "timestamp_str": "2026-11-22 12:00:11",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 10",
+      "phase_num": 3,
+      "description": "Reforge stage 10: stage 10 host review reviewed; run completed; coverage 0/0",
+      "files_affected": [],
+      "status": "completed",
+      "timestamp": 1795338043.1871927,
+      "timestamp_str": "2026-11-22 12:00:43",
+      "agent": "opencode",
+      "operator_task": "kiln-v10"
     }
   ]
 }
