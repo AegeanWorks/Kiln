@@ -20,7 +20,7 @@ fn main() -> ExitCode {
         Ok(Command::Generate { schema, format, count, out, edges, seed }) => {
             shell::run_generate(schema, format, count, out, edges, seed)
         }
-        Ok(Command::Check { schema, fixture, json }) => shell::run_check(schema, fixture, json),
+        Ok(Command::Check { schema, fixture, json, seed }) => shell::run_check(schema, fixture, json, seed),
         Ok(Command::Diff { left, right, format, json }) => shell::run_diff(left, right, format, json),
         Ok(Command::Manifest { path, json }) => shell::run_manifest(path, json),
         Ok(Command::Corpus { schema, start, end, format, out_dir }) => {

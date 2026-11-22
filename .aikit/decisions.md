@@ -116,3 +116,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: Generated-byte comparison cannot tell whether a manually edited fixture still respects the declared schema
 - **Decision**: kiln validate reads a schema and a fixture, parses the fixture in the pure core and reports path-qualified type and bound issues with exit 0 or 1
 - **Consequences**: Validation reuses the existing JSON and CSV readers; no new state machine is needed for a one-shot check
+
+### ADR-016: Let check reuse the seed override
+- **Date**: 2026-11-22
+- **Status**: Accepted
+- **Context**: generate --seed produces fixtures that the existing check command cannot verify without editing the schema
+- **Decision**: Add --seed to check and pass it through Event::Start into the same pure override step used by generate
+- **Consequences**: Generate and check are symmetric; the state machine needs no new field

@@ -374,6 +374,20 @@ fn validate_rejects_a_stale_fixture_with_json_output() {
 }
 
 #[test]
+fn check_accepts_the_same_seed_override_as_generate() {
+    let fixture = temp_path("seeded", "json");
+    let generate = kiln().args(["generate", "examples/users.kiln", "--seed", "11", "--out"])
+        .arg(&fixture).output().unwrap();
+    assert!(generate.status.success(), "{}", stderr(&generate));
+    let check = kiln().arg("check").arg("examples/users.kiln")
+        .args(["--fixture"]).arg(&fixture)
+        .args(["--seed", "11"]).output().unwrap();
+    cleanup(&fixture);
+    assert_eq!(check.status.code(), Some(0), "{}", stdout(&check));
+    assert!(stdout(&check).contains("PASS"));
+}
+
+#[test]
 fn working_directory_does_not_change_the_bytes() {
     let output = Command::new(env!("CARGO_BIN_EXE_kiln"))
         .current_dir("examples")

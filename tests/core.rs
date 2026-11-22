@@ -324,7 +324,12 @@ fn cli_parses_json_flag() {
         "check".to_string(), "s.kiln".to_string(), "--fixture".to_string(),
         "f.json".to_string(), "--json".to_string(),
     ];
-    assert!(matches!(cli::parse(&check).unwrap(), Command::Check { json: true, .. }));
+    assert!(matches!(cli::parse(&check).unwrap(), Command::Check { json: true, seed: None, .. }));
+    let seeded = vec![
+        "check".to_string(), "s.kiln".to_string(), "--fixture".to_string(),
+        "f.json".to_string(), "--seed".to_string(), "7".to_string(),
+    ];
+    assert!(matches!(cli::parse(&seeded).unwrap(), Command::Check { seed: Some(7), .. }));
 }
 
 #[test]

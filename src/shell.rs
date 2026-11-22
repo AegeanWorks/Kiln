@@ -159,7 +159,7 @@ pub fn run_generate(
 
 /// One fixture check. The format override is used by manifest entries, which
 /// declare their own format rather than inheriting it from the schema.
-fn run_single_check(path: String, fixture: String, format: Option<Format>, mode: GenerationMode, json: bool, quiet: bool) -> i32 {
+fn run_single_check(path: String, fixture: String, format: Option<Format>, mode: GenerationMode, json: bool, quiet: bool, seed: Option<u64>) -> i32 {
     match read_text(&fixture) {
         Ok(text) => run_machine(Event::Start {
             path,
@@ -170,7 +170,7 @@ fn run_single_check(path: String, fixture: String, format: Option<Format>, mode:
             check: true,
             mode,
             json,
-            seed: None,
+            seed,
         }, quiet),
         Err(message) => {
             print_err(&message);
@@ -180,8 +180,8 @@ fn run_single_check(path: String, fixture: String, format: Option<Format>, mode:
 }
 
 /// `check` command: read the committed fixture at the edge, then compare.
-pub fn run_check(path: String, fixture: String, json: bool) -> i32 {
-    run_single_check(path, fixture, None, GenerationMode::Seeded, json, false)
+pub fn run_check(path: String, fixture: String, json: bool, seed: Option<u64>) -> i32 {
+    run_single_check(path, fixture, None, GenerationMode::Seeded, json, false, seed)
 }
 
 /// `diff` command: compare two committed fixtures without regenerating.
@@ -251,7 +251,7 @@ pub fn run_manifest(path: String, json: bool) -> i32 {
                 },
                 ManifestAction::RunEntry { entry } => {
                     let verdict = Verdict::from_equal(
-                        run_single_check(entry.schema, entry.fixture, Some(entry.format), entry.mode, false, state.json) == 0,
+                        run_single_check(entry.schema, entry.fixture, Some(entry.format), entry.mode, false, state.json, None) == 0,
                     );
                     queue.push_back(ManifestEvent::EntryDone { verdict });
                 }

@@ -17,6 +17,7 @@ pub enum Command {
         schema: String,
         fixture: String,
         json: bool,
+        seed: Option<u64>,
     },
     Diff {
         left: String,
@@ -61,7 +62,7 @@ pub fn usage() -> String {
     out.push_str("Usage:\n");
     out.push_str("  kiln generate <schema.kiln> [--format json|jsonl|csv] [--count N] [--out FILE] [--edges] [--seed N]\n");
     out.push_str("  a schema path of '-' reads the schema from stdin\n");
-    out.push_str("  kiln check <schema.kiln> --fixture <FILE>\n");
+    out.push_str("  kiln check <schema.kiln> --fixture <FILE> [--seed N] [--json]\n");
     out.push_str("  kiln check --manifest kiln.toml\n");
     out.push_str("  kiln diff <left> <right> [--format json|jsonl|csv]\n");
     out.push_str("  kiln demo --scripted [--seed N]\n");
@@ -183,9 +184,14 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
             let mut schema: Option<String> = None;
             let mut fixture = None;
             let mut json = false;
+            let mut seed = None;
             let mut i = 0;
             while i < rest.len() {
                 match rest[i].as_str() {
+                    "--seed" => {
+                        let value = take_value(rest, &mut i, "--seed")?;
+                        seed = Some(value.parse::<u64>().map_err(|_| error("--seed needs a non-negative integer"))?);
+                    }
                     "--json" => json = true,
                     "--fixture" => fixture = Some(take_value(rest, &mut i, "--fixture")?),
                     other if other.starts_with('-') && other != "-" => {
@@ -202,7 +208,7 @@ pub fn parse(args: &[String]) -> Result<Command, String> {
             }
             let schema = schema.ok_or_else(|| error("check needs a schema path"))?;
             let fixture = fixture.ok_or_else(|| error("check needs --fixture <FILE>"))?;
-            Ok(Command::Check { schema, fixture, json })
+            Ok(Command::Check { schema, fixture, json, seed })
         }
         "validate" => {
             let mut fixture = None;
